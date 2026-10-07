@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { TAG_DIMENSIONS } from '../constants/defaultPositions';
 import { InteractiveCardPreview } from './InteractiveCardPreview';
+import { findArticolo, findLavorante, revisionAfterCodeChange } from '../lib/cartellino';
 import {
   Printer,
   Calendar,
@@ -90,18 +91,27 @@ export const StampaTab: React.FC<StampaTabProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filtered lists (based on typed search query, preserving list while arrow keys navigate)
+  // Filtered lists: solo il testo digitato filtra. Le frecce cambiano il campo ma non il filtro,
+  // altrimenti alla prima freccia l'elenco si riduceva all'unico articolo appena scelto.
   const filteredArticoli = articoli.filter((a) => {
-    const q = (searchArticoloQuery !== '' ? searchArticoloQuery : formData.codiceArticolo || '').toLowerCase().trim();
+    const q = searchArticoloQuery.toLowerCase().trim();
     if (!q) return true;
     return a.codice.toLowerCase().includes(q) || (a.descrizione && a.descrizione.toLowerCase().includes(q));
   });
 
   const filteredLavoranti = lavoranti.filter((l) => {
-    const q = (searchLavoranteQuery !== '' ? searchLavoranteQuery : formData.lavorante || '').toLowerCase().trim();
+    const q = searchLavoranteQuery.toLowerCase().trim();
     if (!q) return true;
     return l.toLowerCase().includes(q);
   });
+
+  // Codice cambiato a mano: la revisione segue il codice (vedi revisionAfterCodeChange).
+  const changeCodiceArticolo = (newCode: string) => {
+    onChangeFormData({
+      codiceArticolo: newCode,
+      revisione: revisionAfterCodeChange(articoli, formData.codiceArticolo, formData.revisione, newCode)
+    });
+  };
 
   const handleSelectArticolo = (art: Articolo) => {
     onChangeFormData({
@@ -172,12 +182,14 @@ export const StampaTab: React.FC<StampaTabProps> = ({
         }
       }
     } else if (e.key === 'Tab') {
-      if (isArticoloOpen && filteredArticoli.length > 0) {
-        const activeIdx = highlightedArticoloIdx >= 0 ? highlightedArticoloIdx : 0;
-        const target = filteredArticoli[activeIdx];
-        if (target) {
-          handleSelectArticolo(target);
-        }
+      // Tab conferma solo un codice identico a uno in anagrafica (così prende la sua revisione).
+      // Non sceglie mai da solo il primo dell'elenco: passare su un campo vuoto lo lascia vuoto.
+      const exact = findArticolo(articoli, formData.codiceArticolo);
+      if (exact) {
+        handleSelectArticolo(exact);
+      } else {
+        setIsArticoloOpen(false);
+        setHighlightedArticoloIdx(-1);
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
@@ -236,12 +248,13 @@ export const StampaTab: React.FC<StampaTabProps> = ({
         }
       }
     } else if (e.key === 'Tab') {
-      if (isLavoranteOpen && filteredLavoranti.length > 0) {
-        const activeIdx = highlightedLavoranteIdx >= 0 ? highlightedLavoranteIdx : 0;
-        const target = filteredLavoranti[activeIdx];
-        if (target) {
-          handleSelectLavorante(target);
-        }
+      // Come per l'articolo: Tab non riempie mai il campo con il primo nome dell'elenco.
+      const exact = findLavorante(lavoranti, formData.lavorante);
+      if (exact) {
+        handleSelectLavorante(exact);
+      } else {
+        setIsLavoranteOpen(false);
+        setHighlightedLavoranteIdx(-1);
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
@@ -310,7 +323,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
                 onChange={(e) => {
                   const val = e.target.value;
                   setSearchArticoloQuery(val);
-                  onChangeFormData({ codiceArticolo: val });
+                  changeCodiceArticolo(val);
                   setIsArticoloOpen(true);
                   setHighlightedArticoloIdx(0);
                 }}
@@ -322,7 +335,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
                     type="button"
                     onClick={() => {
                       setSearchArticoloQuery('');
-                      onChangeFormData({ codiceArticolo: '' });
+                      changeCodiceArticolo('');
                       setIsArticoloOpen(true);
                     }}
                     className="p-1 hover:text-slate-600 rounded cursor-pointer"

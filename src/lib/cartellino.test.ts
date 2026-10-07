@@ -1,9 +1,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   fieldText,
+  findArticolo,
   formatDateIt,
   missingRequired,
   refreshAutoDate,
+  revisionAfterCodeChange,
   todayIso
 } from './cartellino';
 import { Articolo, CartellinoFormData } from '../types';
@@ -28,6 +30,11 @@ const emptyForm: CartellinoFormData = {
   showBarcodeArticolo: true,
   showBarcodeLancio: true
 };
+
+const articoli: Articolo[] = [
+  { id: '1', codice: '01.002.00', rev: 'Rev. 01' },
+  { id: '2', codice: '01.003.00', rev: 'Rev. 04' }
+];
 
 describe('data del cartellino', () => {
   it('a mezzanotte e mezza è già il giorno nuovo (prima usciva la data di ieri)', () => {
@@ -77,5 +84,29 @@ describe('testo stampato', () => {
     expect(
       missingRequired({ ...emptyForm, codiceArticolo: 'X', revisione: 'Rev. 00', numeroLancio: '  ' })
     ).toEqual(['Numero lancio']);
+  });
+});
+
+describe('codice articolo e revisione', () => {
+  it('trova l\'articolo anche con maiuscole o spazi diversi', () => {
+    expect(findArticolo(articoli, ' 01.002.00 ')?.rev).toBe('Rev. 01');
+    expect(findArticolo(articoli, '01.002')).toBeUndefined();
+    expect(findArticolo(articoli, '')).toBeUndefined();
+  });
+
+  it('un codice in anagrafica porta la sua revisione', () => {
+    expect(revisionAfterCodeChange(articoli, '01.002.00', 'Rev. 01', '01.003.00')).toBe('Rev. 04');
+  });
+
+  it('un codice nuovo non si tiene la revisione dell\'articolo di prima', () => {
+    expect(revisionAfterCodeChange(articoli, '01.002.00', 'Rev. 01', '01.009.00')).toBe('');
+  });
+
+  it('una revisione scritta a mano resta', () => {
+    expect(revisionAfterCodeChange(articoli, '01.009.00', 'Rev. 07', '01.009.01')).toBe('Rev. 07');
+  });
+
+  it('cancellando il codice si cancella anche la revisione automatica', () => {
+    expect(revisionAfterCodeChange(articoli, '01.002.00', 'Rev. 01', '')).toBe('');
   });
 });

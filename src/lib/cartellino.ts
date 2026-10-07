@@ -85,3 +85,34 @@ const REQUIRED: { key: keyof CartellinoFormData; label: string }[] = [
 
 export const missingRequired = (formData: CartellinoFormData): string[] =>
   REQUIRED.filter(({ key }) => !String(formData[key] ?? '').trim()).map(({ label }) => label);
+
+// Articolo con codice identico (maiuscole/minuscole e spazi esterni ignorati).
+export const findArticolo = (articoli: Articolo[], codice: string): Articolo | undefined => {
+  const q = (codice || '').trim().toLowerCase();
+  if (!q) return undefined;
+  return articoli.find((a) => a.codice.trim().toLowerCase() === q);
+};
+
+export const findLavorante = (lavoranti: string[], nome: string): string | undefined => {
+  const q = (nome || '').trim().toLowerCase();
+  if (!q) return undefined;
+  return lavoranti.find((l) => l.trim().toLowerCase() === q);
+};
+
+// Revisione da mostrare dopo che l'operatore ha modificato il codice articolo:
+// - codice presente in anagrafica -> la sua revisione;
+// - altrimenti, se la revisione era stata riempita in automatico dal codice precedente, va svuotata
+//   (altrimenti un codice nuovo uscirebbe con la revisione di un altro articolo);
+// - una revisione scritta a mano resta.
+export const revisionAfterCodeChange = (
+  articoli: Articolo[],
+  oldCode: string,
+  oldRev: string,
+  newCode: string
+): string => {
+  const match = findArticolo(articoli, newCode);
+  if (match) return match.rev;
+  const previous = findArticolo(articoli, oldCode);
+  if (previous && previous.rev === oldRev) return '';
+  return oldRev;
+};
