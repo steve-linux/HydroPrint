@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Hydro-Mec Stampa Cartellini
+GenericName=Gestione e Stampa Cartellini
+Comment=Compilazione, calibrazione drag & drop e stampa cartellini prestampati Hydro-Mec
+Exec=bash -c "cd %k/.. 2>/dev/null || cd \"\$(dirname \"\$(realpath \"\$0\")\")\"; ./avvia_app.sh"
+Icon=printer
+Terminal=true
+Categories=Office;Development;Utility;
+Keywords=HydroMec;Stampa;Cartellini;Etichette;
+StartupNotify=true

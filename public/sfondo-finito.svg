@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2200 870" width="2200" height="870">
+  <rect width="2200" height="870" fill="#ffffff"/>
+  
+  <!-- Outer perimeter line -->
+  <rect x="6" y="6" width="2188" height="858" fill="none" stroke="#111111" stroke-width="6"/>
+
+  <!-- Header horizontal separator -->
+  <line x1="6" y1="230" x2="2194" y2="230" stroke="#111111" stroke-width="6"/>
+
+  <!-- Header Left Box -->
+  <g>
+    <!-- HYDRO•MEC -->
+    <text x="45" y="105" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="64" fill="#000000" letter-spacing="1">HYDRO•MEC</text>
+    <text x="45" y="195" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="54" fill="#000000" letter-spacing="1">COD. LANCIO</text>
+  </g>
+
+  <!-- Header Right Blue Banner -->
+  <rect x="546" y="6" width="1648" height="224" fill="#2b5faa"/>
+  <text x="1370" y="108" text-anchor="middle" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="74" fill="#ffffff" letter-spacing="2">MATERIALE FINITO</text>
+  <text x="1370" y="196" text-anchor="middle" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="66" fill="#ffffff" letter-spacing="16">DA VERSARE</text>
+
+  <!-- Vertical separator lines in body -->
+  <!-- Col 1 / 2 border -->
+  <line x1="546" y1="6" x2="546" y2="864" stroke="#111111" stroke-width="6"/>
+  <!-- Col 2 / 3 border -->
+  <line x1="1650" y1="230" x2="1650" y2="864" stroke="#111111" stroke-width="6"/>
+
+  <!-- Labels inside columns -->
+  <text x="568" y="295" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="52" fill="#000000">COD.</text>
+  <text x="1670" y="295" font-family="'Arial Black', 'Segoe UI', sans-serif" font-weight="900" font-size="52" fill="#000000">Q.tà:</text>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "Hydro-Mec - Gestione e Stampa Cartellini",
+  "description": "Applicazione per la compilazione, calibrazione drag & drop e stampa su cartellini prestampati Hydro-Mec, con import/export CSV e backup impostazioni.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
