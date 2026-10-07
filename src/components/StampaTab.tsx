@@ -38,6 +38,7 @@ interface StampaTabProps {
   onToggleLock: () => void;
   onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
   onPrint: () => void;
+  barcodeWarnings: string[];
   onOpenWindowsGuide?: (tab?: 'compression' | 'pwa' | 'offline' | 'driver') => void;
 }
 
@@ -52,6 +53,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
   onToggleLock,
   onUpdateSettings,
   onPrint,
+  barcodeWarnings,
   onOpenWindowsGuide
 }) => {
   const currentDim = TAG_DIMENSIONS[formData.tipo];
@@ -735,6 +737,18 @@ export const StampaTab: React.FC<StampaTabProps> = ({
             </div>
           )}
         </div>
+
+        {/* Avvisi barcode: meglio vederli prima di sprecare un cartellino prestampato */}
+        {barcodeWarnings.length > 0 && (
+          <div className="mt-6 p-4 bg-rose-50 border-2 border-rose-300 rounded-xl text-rose-900 text-xs space-y-1.5">
+            {barcodeWarnings.map((w) => (
+              <div key={w} className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{w}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Print Bar */}
         <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col xl:flex-row xl:items-center justify-between gap-4">

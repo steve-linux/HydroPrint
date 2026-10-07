@@ -3,6 +3,7 @@ import { CartellinoType, FieldCalibration, CartellinoFormData, AppSettings } fro
 import { TAG_DIMENSIONS } from '../constants/defaultPositions';
 import { CardBackground } from './CardBackground';
 import { BarcodeRenderer } from './BarcodeRenderer';
+import { barcodeMaxWidthMm } from '../lib/barcode';
 import { Lock, Unlock, Move } from 'lucide-react';
 
 interface InteractiveCardPreviewProps {
@@ -327,13 +328,13 @@ export const InteractiveCardPreview: React.FC<InteractiveCardPreviewProps> = ({
                   <BarcodeRenderer
                     value={formData.codiceArticolo || 'ART-001'}
                     heightMm={field.heightMm || 12}
-                    displayValue={false}
+                    maxWidthMm={barcodeMaxWidthMm(tipo, fieldKey, field)}
                   />
                 ) : isBarcodeLancio ? (
                   <BarcodeRenderer
                     value={formData.numeroLancio || 'L-2026-088'}
                     heightMm={field.heightMm || 12}
-                    displayValue={false}
+                    maxWidthMm={barcodeMaxWidthMm(tipo, fieldKey, field)}
                   />
                 ) : isCollo ? (
                   /* Riquadro attorno a Collo: X/Y */

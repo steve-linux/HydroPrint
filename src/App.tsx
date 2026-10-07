@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { formBarcodeWarnings } from './lib/barcode';
 import {
   CartellinoType,
   FieldCalibration,
@@ -223,9 +224,9 @@ export default function App() {
     }
   }, [settings]);
 
-  // Aggiornamento singolo parametro posizione di calibrazione (top, left, fontSize, heightMm)
+  // Aggiornamento singolo parametro posizione di calibrazione (top, left, fontSize, heightMm, maxWidth)
   const handleUpdatePosition = useCallback(
-    (tipo: CartellinoType, fieldId: string, param: 'top' | 'left' | 'fontSize' | 'heightMm', value: number) => {
+    (tipo: CartellinoType, fieldId: string, param: 'top' | 'left' | 'fontSize' | 'heightMm' | 'maxWidth', value: number) => {
       setPosizioni((prev) => {
         const tagMap = prev[tipo] as Record<string, FieldCalibration>;
         if (!tagMap[fieldId]) return prev;
@@ -532,6 +533,7 @@ export default function App() {
             onToggleLock={handleToggleLock}
             onUpdateSettings={handleUpdateSettings}
             onPrint={handlePrint}
+            barcodeWarnings={formBarcodeWarnings(formData, posizioni[formData.tipo])}
             onOpenWindowsGuide={(tab) => {
               setWindowsModalTab(tab || 'compression');
               setWindowsInstallModalOpen(true);

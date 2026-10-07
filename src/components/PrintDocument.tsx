@@ -3,6 +3,7 @@ import { CartellinoType, FieldCalibration, CartellinoFormData, AppSettings } fro
 import { TAG_DIMENSIONS } from '../constants/defaultPositions';
 import { CardBackground } from './CardBackground';
 import { BarcodeRenderer } from './BarcodeRenderer';
+import { barcodeMaxWidthMm } from '../lib/barcode';
 
 interface PrintDocumentProps {
   tipo: CartellinoType;
@@ -241,13 +242,15 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
                   <BarcodeRenderer
                     value={barcodeArticoloVal}
                     heightMm={field.heightMm || 12}
-                    displayValue={false}
+                    maxWidthMm={barcodeMaxWidthMm(tipo, fieldKey, field)}
+                    isPrint
                   />
                 ) : isBarcodeLancio ? (
                   <BarcodeRenderer
                     value={barcodeLancioVal}
                     heightMm={field.heightMm || 12}
-                    displayValue={false}
+                    maxWidthMm={barcodeMaxWidthMm(tipo, fieldKey, field)}
+                    isPrint
                   />
                 ) : isCollo ? (
                   <span

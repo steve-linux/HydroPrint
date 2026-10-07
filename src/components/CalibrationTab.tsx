@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { CartellinoType, FieldCalibration, CartellinoFormData, AppSettings } from '../types';
 import { TAG_DIMENSIONS } from '../constants/defaultPositions';
 import { InteractiveCardPreview } from './InteractiveCardPreview';
+import { barcodeMaxWidthMm } from '../lib/barcode';
 import {
   Lock,
   Unlock,
@@ -24,7 +25,7 @@ interface CalibrationTabProps {
   allPositions: Record<CartellinoType, Record<string, FieldCalibration>>;
   formData: CartellinoFormData;
   settings: AppSettings;
-  onUpdatePosition: (tipo: CartellinoType, fieldId: string, param: 'top' | 'left' | 'fontSize' | 'heightMm', value: number) => void;
+  onUpdatePosition: (tipo: CartellinoType, fieldId: string, param: 'top' | 'left' | 'fontSize' | 'heightMm' | 'maxWidth', value: number) => void;
   onResetDefaults: (tipo: CartellinoType) => void;
   onSavePositions: () => void;
   onToggleLock: () => void;
@@ -245,7 +246,7 @@ export const CalibrationTab: React.FC<CalibrationTabProps> = ({
                 <th className="p-3">Campo</th>
                 <th className="p-3 text-center">Alto / Top (mm)</th>
                 <th className="p-3 text-center">Sinistra / Left (mm)</th>
-                <th className="p-3 text-center">Font (pt) / Alt. Barcode (mm)</th>
+                <th className="p-3 text-center">Font (pt) / Barcode: altezza e larghezza max (mm)</th>
                 <th className="p-3 text-center">Azioni Rapide (±0.5 mm)</th>
               </tr>
             </thead>
@@ -355,6 +356,24 @@ export const CalibrationTab: React.FC<CalibrationTabProps> = ({
                               className="w-16 text-center font-mono font-bold p-1.5 bg-blue-50/50 border border-blue-300 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:bg-slate-100"
                             />
                             <span className="text-blue-600 font-sans font-medium text-[11px]">mm alt.</span>
+                            {/* Spazio massimo in larghezza: un codice lungo si stringe per starci */}
+                            <input
+                              type="number"
+                              step="1"
+                              min="10"
+                              max={currentDim.widthMm}
+                              disabled={settings.isLocked}
+                              value={barcodeMaxWidthMm(selectedTipo, fieldKey, field)}
+                              onChange={(e) => {
+                                const v = parseFloat(e.target.value);
+                                if (Number.isFinite(v) && v > 0) {
+                                  onUpdatePosition(selectedTipo, fieldKey, 'maxWidth', v);
+                                }
+                              }}
+                              title="Larghezza massima del barcode: se il codice è lungo, le barre si stringono per non uscire da questo spazio"
+                              className="ml-2 w-16 text-center font-mono font-bold p-1.5 bg-blue-50/50 border border-blue-300 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:bg-slate-100"
+                            />
+                            <span className="text-blue-600 font-sans font-medium text-[11px]">mm larg. max</span>
                           </>
                         ) : (
                           <>
