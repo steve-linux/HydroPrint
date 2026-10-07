@@ -643,14 +643,18 @@ export default function App() {
         )}
       </main>
 
-      {/* CSV Import Modal */}
-      <CsvImportModal
-        type={csvModalType}
-        isOpen={csvModalOpen}
-        onClose={() => setCsvModalOpen(false)}
-        onImportArticoli={handleImportArticoli}
-        onImportLavoranti={handleImportLavoranti}
-      />
+      {/* CSV Import Modal: montata solo quando è aperta, così ogni apertura riparte da zero
+          (prima restavano anteprima e modalità "Sostituisci" dell'importazione precedente) */}
+      {csvModalOpen && (
+        <CsvImportModal
+          key={csvModalType}
+          type={csvModalType}
+          isOpen={csvModalOpen}
+          onClose={() => setCsvModalOpen(false)}
+          onImportArticoli={handleImportArticoli}
+          onImportLavoranti={handleImportLavoranti}
+        />
+      )}
 
       {/* Backup and Cross-Browser Settings Modal */}
       <BackupModal
