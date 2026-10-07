@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { flushSync } from 'react-dom';
+import { missingRequired, refreshAutoDate, todayIso } from './lib/cartellino';
 import { formBarcodeWarnings } from './lib/barcode';
 import {
   CartellinoType,
@@ -148,8 +150,9 @@ export default function App() {
   });
 
   // 5. Form di compilazione cartellino
+  // La data compilata in automatico segue il giorno corrente finché l'operatore non la cambia a mano.
+  const autoDateRef = useRef(todayIso());
   const [formData, setFormData] = useState<CartellinoFormData>(() => {
-    const today = new Date().toISOString().slice(0, 10);
     return {
       tipo: 'versare',
       codiceArticolo: '',
@@ -157,7 +160,7 @@ export default function App() {
       numeroLancio: '',
       numeroPezzi: '',
       lavorante: '',
-      data: today,
+      data: autoDateRef.current,
       collo: '1/1',
       colloNumero: '1',
       colloTotale: '1',
@@ -166,6 +169,32 @@ export default function App() {
       showBarcodeLancio: true
     };
   });
+
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+
+  // Porta avanti la data automatica (app lasciata aperta da un giorno all'altro).
+  // Restituisce la data aggiornata, che il chiamante può usare subito.
+  const refreshDate = useCallback((): string => {
+    const current = formDataRef.current.data;
+    const { data, autoValue } = refreshAutoDate(current, autoDateRef.current, todayIso());
+    autoDateRef.current = autoValue;
+    if (data !== current) setFormData((prev) => ({ ...prev, data }));
+    return data;
+  }, []);
+
+  useEffect(() => {
+    const onActive = () => refreshDate();
+    window.addEventListener('focus', onActive);
+    document.addEventListener('visibilitychange', onActive);
+    return () => {
+      window.removeEventListener('focus', onActive);
+      document.removeEventListener('visibilitychange', onActive);
+    };
+  }, [refreshDate]);
+
+  // Stampa di prova: dati di esempio solo quando chiesti esplicitamente.
+  const [testPrint, setTestPrint] = useState(false);
 
   // Tab di navigazione
   const [activeTab, setActiveTab] = useState<'stampa' | 'calibrazione' | 'articoli' | 'lavoranti'>('stampa');
@@ -348,8 +377,27 @@ export default function App() {
     showToast('Ripristino completo effettuato con successo!');
   };
 
-  // Esecuzione stampa
-  const handlePrint = () => {
+  // Esecuzione stampa.
+  // Stampa vera: prima di sprecare un cartellino prestampato si avvisa se mancano dati o se un barcode
+  // non sarebbe leggibile. Stampa di prova: dati di esempio, per controllare l'allineamento.
+  const handlePrint = (test = false) => {
+    if (!test) {
+      const missing = missingRequired(formData);
+      const problems = [
+        ...(missing.length ? [`Campi obbligatori vuoti: ${missing.join(', ')}.`] : []),
+        ...formBarcodeWarnings(formData, posizioni[formData.tipo])
+      ];
+      if (problems.length && !confirm(`${problems.join('\n\n')}\n\nStampare comunque?`)) return;
+    }
+
+    // La pagina deve essere già aggiornata (data e dati di prova) quando parte window.print().
+    flushSync(() => {
+      refreshDate();
+      setTestPrint(test);
+    });
+    if (test) {
+      window.addEventListener('afterprint', () => setTestPrint(false), { once: true });
+    }
     window.print();
   };
 
@@ -532,7 +580,8 @@ export default function App() {
             onUpdatePosition={handleUpdatePosition}
             onToggleLock={handleToggleLock}
             onUpdateSettings={handleUpdateSettings}
-            onPrint={handlePrint}
+            onPrint={() => handlePrint(false)}
+            onTestPrint={() => handlePrint(true)}
             barcodeWarnings={formBarcodeWarnings(formData, posizioni[formData.tipo])}
             onOpenWindowsGuide={(tab) => {
               setWindowsModalTab(tab || 'compression');
@@ -633,6 +682,7 @@ export default function App() {
       positions={posizioni[formData.tipo]}
       formData={formData}
       settings={settings}
+      testPrint={testPrint}
     />
   </>
   );

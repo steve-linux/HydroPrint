@@ -3,6 +3,7 @@ import { CartellinoType, FieldCalibration, CartellinoFormData, AppSettings } fro
 import { TAG_DIMENSIONS } from '../constants/defaultPositions';
 import { CardBackground } from './CardBackground';
 import { BarcodeRenderer } from './BarcodeRenderer';
+import { fieldText } from '../lib/cartellino';
 import { barcodeMaxWidthMm } from '../lib/barcode';
 import { Lock, Unlock, Move } from 'lucide-react';
 
@@ -42,55 +43,17 @@ export const InteractiveCardPreview: React.FC<InteractiveCardPreviewProps> = ({
 
   const dim = TAG_DIMENSIONS[tipo];
 
-  // Helper text preparation based on form data
-  const getFieldText = (fieldKey: string): string => {
-    const artOnly = formData.codiceArticolo
-      ? formData.codiceArticolo
-      : (isCalibrationMode ? '[Codice Articolo]' : '');
-
-    const revOnly = formData.revisione
-      ? formData.revisione
-      : (isCalibrationMode ? '[Rev. 00]' : '');
-
-    const formattedDate = formData.data
-      ? new Date(formData.data).toLocaleDateString('it-IT')
-      : new Date().toLocaleDateString('it-IT');
-
-    const formattedCollo = (() => {
-      if (formData.colloNumero !== undefined && formData.colloTotale !== undefined) {
-        const num = formData.colloNumero || '1';
-        const tot = formData.colloTotale || '1';
-        return `Collo: ${num}/${tot}`;
-      }
-      if (formData.collo) {
-        return formData.collo.toLowerCase().includes('collo')
-          ? formData.collo
-          : `Collo: ${formData.collo}`;
-      }
-      return 'Collo: 1/1';
-    })();
-
-    switch (fieldKey) {
-      case 'codice':
-        return artOnly;
-      case 'revisione':
-        return revOnly;
-      case 'lancio':
-        return formData.numeroLancio || (isCalibrationMode ? '[Lancio]' : '');
-      case 'qta':
-        return formData.numeroPezzi ? `${formData.numeroPezzi} PZ` : (isCalibrationMode ? '[Q.tà PZ]' : '');
-      case 'lavorante':
-        return formData.lavorante || (isCalibrationMode ? '[Lavorante]' : '');
-      case 'data':
-        return formattedDate;
-      case 'collo':
-        return formattedCollo;
-      case 'note':
-        return formData.noteLibere || (isCalibrationMode ? '[Note libere]' : '');
-      default:
-        return '';
-    }
+  // Stesso testo della stampa (fieldText); in Calibrazione i campi vuoti mostrano un segnaposto.
+  const CALIBRATION_PLACEHOLDERS: Record<string, string> = {
+    codice: '[Codice Articolo]',
+    revisione: '[Rev. 00]',
+    lancio: '[Lancio]',
+    qta: '[Q.tà PZ]',
+    lavorante: '[Lavorante]',
+    note: '[Note libere]'
   };
+  const getFieldText = (fieldKey: string): string =>
+    fieldText(fieldKey, formData) || (isCalibrationMode ? CALIBRATION_PLACEHOLDERS[fieldKey] || '' : '');
 
   // Pointer drag handling (mouse + touch)
   const handlePointerDown = (e: React.PointerEvent, fieldId: string) => {

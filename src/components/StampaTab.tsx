@@ -38,6 +38,7 @@ interface StampaTabProps {
   onToggleLock: () => void;
   onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
   onPrint: () => void;
+  onTestPrint: () => void;
   barcodeWarnings: string[];
   onOpenWindowsGuide?: (tab?: 'compression' | 'pwa' | 'offline' | 'driver') => void;
 }
@@ -53,6 +54,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
   onToggleLock,
   onUpdateSettings,
   onPrint,
+  onTestPrint,
   barcodeWarnings,
   onOpenWindowsGuide
 }) => {
@@ -774,6 +776,16 @@ export const StampaTab: React.FC<StampaTabProps> = ({
             >
               <Eye className="w-4 h-4 text-blue-400" />
               <span>Anteprima Foglio / Test</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onTestPrint}
+              className="inline-flex items-center justify-center gap-2 px-4 py-3.5 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-800 border-2 border-dashed border-slate-400 rounded-xl text-sm font-bold transition-all cursor-pointer"
+              title="Stampa dati di esempio (01.002.00, L-2026-088...) per controllare l'allineamento su un cartellino di prova"
+            >
+              <Printer className="w-4 h-4 text-slate-500" />
+              <span>Stampa di prova</span>
             </button>
 
             {/* Print Options */}
