@@ -38,6 +38,7 @@ interface StampaTabProps {
   onToggleLock: () => void;
   onUpdateSettings: (newSettings: Partial<AppSettings>) => void;
   onPrint: () => void;
+  onOpenWindowsGuide?: (tab?: 'compression' | 'pwa' | 'offline' | 'driver') => void;
 }
 
 export const StampaTab: React.FC<StampaTabProps> = ({
@@ -50,7 +51,8 @@ export const StampaTab: React.FC<StampaTabProps> = ({
   onUpdatePosition,
   onToggleLock,
   onUpdateSettings,
-  onPrint
+  onPrint,
+  onOpenWindowsGuide
 }) => {
   const currentDim = TAG_DIMENSIONS[formData.tipo];
 
@@ -704,6 +706,34 @@ export const StampaTab: React.FC<StampaTabProps> = ({
               </label>
             </div>
           </div>
+
+          {/* BANNER DI PREVENZIONE COMPRESSIONE 220 mm */}
+          {formData.tipo === 'versare' && (
+            <div className="lg:col-span-4 bg-amber-50 border-2 border-amber-300 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-amber-500 text-white rounded-lg shrink-0 mt-0.5 shadow-xs">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-black text-amber-950 text-xs sm:text-sm block">
+                    ⚠️ Controllo Formato 220 mm (Anti-Compressione Windows 11)
+                  </span>
+                  <p className="text-amber-900 text-xs mt-0.5 leading-relaxed">
+                    Se la stampa risultava compressa a ~150 mm, il driver o Edge stavano riutilizzando il formato A6 (148 mm) del cartellino blu.
+                    Questo software ora inietta la direttiva <code className="bg-white/80 px-1 py-0.5 rounded font-mono font-bold text-amber-950">@page 220×87 mm</code>.
+                    Assicurati che nel prompt di stampa di Windows la <b>Scala sia al 100% (NON "Adatta alla pagina")</b>.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onOpenWindowsGuide && onOpenWindowsGuide('compression')}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white rounded-xl text-xs font-bold shadow-md shrink-0 transition-all cursor-pointer"
+              >
+                <span>Guida Risoluzione 220 mm</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Print Bar */}
@@ -715,7 +745,11 @@ export const StampaTab: React.FC<StampaTabProps> = ({
               className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white rounded-xl text-base font-bold shadow-lg shadow-emerald-600/25 transition-all cursor-pointer"
             >
               <Printer className="w-5 h-5" />
-              <span>Stampa su INEO3320 (A6 Bypass)</span>
+              <span>
+                {formData.tipo === 'versare'
+                  ? 'Stampa Cartellino 220 × 87 mm (Bypass)'
+                  : 'Stampa Cartellino 147.5 × 104 mm (A6 Bypass)'}
+              </span>
             </button>
 
             <button
@@ -749,13 +783,30 @@ export const StampaTab: React.FC<StampaTabProps> = ({
                 />
                 <span>Bordo cartellino (linea sottile di riferimento)</span>
               </label>
+
+              {/* Selettore Modalità Stampa: Diretto vs A4 */}
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200">
+                <span>Layout:</span>
+                <select
+                  value={settings.printMode || 'direct'}
+                  onChange={(e) => onUpdateSettings({ printMode: e.target.value as 'direct' | 'a4_bypass' })}
+                  className="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="direct">Formato Diretto 1:1 (@page Bypass)</option>
+                  <option value="a4_bypass">Foglio A4 (Scala 100% Antiriduzione)</option>
+                </select>
+              </div>
             </div>
           </div>
 
           <div className="text-xs text-slate-500 flex items-center gap-2 bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-200">
             <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
             <span>
-              <b>Cartellini prestampati:</b> lascia disattivato lo sfondo e inserisci il cartoncino nel vassoio Bypass (A6).
+              {formData.tipo === 'versare' ? (
+                <><b>Cartellino 220 mm:</b> Vassoio Bypass. Nel driver assicurati: <b>Scala 100%</b> e formato non forzato ad A6.</>
+              ) : (
+                <><b>Cartellino Blu:</b> Vassoio Bypass A6 (105 × 148 mm). Scala: 100%.</>
+              )}
             </span>
           </div>
         </div>

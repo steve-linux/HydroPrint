@@ -1,9 +1,276 @@
-export const AVVIA_APP_BAT_CONTENT = "@echo off\nchcp 65001 > nul\ntitle Hydro-Mec - Gestione e Stampa Cartellini (Windows 11)\n\necho ================================================================\necho        HYDRO-MEC - GESTIONE E STAMPA CARTELLINI PRESTAMPATI\necho                  Avvio Applicazione su Windows 11\necho ================================================================\necho.\n\nwhere node >nul 2>nul\nif %errorlevel% neq 0 (\n    echo [ATTENZIONE] Node.js non e' installato o non e' nel PATH.\n    echo Scarica e installa la versione LTS gratuita da: https://nodejs.org/\n    echo Dopo l'installazione, riavvia questo file AVVIA_APP.bat.\n    echo.\n    pause\n    exit /b 1\n)\n\nif not exist \"node_modules\\\" (\n    echo [1/2] Prima esecuzione rilevata.\n    echo       Installazione automatica delle librerie in corso con npm...\n    call npm install --legacy-peer-deps || call npm install --force\n    if %errorlevel% neq 0 (\n        echo [ERRORE] Errore durante l'installazione delle dipendenze.\n        pause\n        exit /b 1\n    )\n    echo [OK] Dipendenze installate con successo.\n)\n\necho [2/2] Avvio del server locale Hydro-Mec...\necho.\necho L'applicazione verra' aperta automaticamente nel browser:\necho http://localhost:3000\necho.\necho Per chiudere l'applicazione chiudi questa finestra o premi Ctrl+C.\necho ================================================================\n\nstart \"\" \"http://localhost:3000\"\ncall npm run dev\n\npause\n";
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-export const AVVIA_APP_SH_CONTENT = "#!/usr/bin/env bash\nset -e\n\n# ================================================================\n#        HYDRO-MEC - GESTIONE E STAMPA CARTELLINI PRESTAMPATI\n#                  Avvio Applicazione su Linux\n# ================================================================\n\necho \"================================================================\"\necho \"       HYDRO-MEC - GESTIONE E STAMPA CARTELLINI PRESTAMPATI\"\necho \"                 Avvio Applicazione su Linux\"\necho \"================================================================\"\necho \"\"\n\nSCRIPT_DIR=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\"\ncd \"$SCRIPT_DIR\"\n\n# Controlla se Node.js e npm sono installati\nif ! command -v node >/dev/null 2>&1; then\n    echo \"[ERRORE] Node.js non \u00e8 installato su questo sistema Linux.\"\n    echo \"Installalo con il gestore pacchetti della tua distribuzione:\"\n    echo \"  - Ubuntu / Debian / Mint:  sudo apt update && sudo apt install -y nodejs npm\"\n    echo \"  - Fedora / RHEL:           sudo dnf install -y nodejs npm\"\n    echo \"  - Arch Linux / Manjaro:    sudo pacman -S nodejs npm\"\n    echo \"  - openSUSE:                sudo zypper install nodejs npm\"\n    echo \"Oppure scarica la versione LTS da: https://nodejs.org/\"\n    echo \"\"\n    read -p \"Premi INVIO per uscire...\"\n    exit 1\nfi\n\necho \"[INFO] Trovato Node.js: $(node -v) (npm: $(npm -v 2>/dev/null || echo 'ok'))\"\n\n# Se node_modules non esiste, installa le dipendenze\nif [ ! -d \"node_modules\" ]; then\n    echo \"[1/2] Prima esecuzione: installazione pacchetti in corso con npm...\"\n    npm install --legacy-peer-deps || npm install --force\n    echo \"[OK] Pacchetti installati con successo.\"\nfi\n\necho \"[2/2] Avvio del server locale Hydro-Mec...\"\necho \"L'applicazione si aprir\u00e0 su: http://localhost:3000\"\necho \"Premi Ctrl+C in questa finestra per arrestare il server.\"\necho \"================================================================\"\necho \"\"\n\n# Apri il browser predefinito\n(\n    sleep 1.5\n    if command -v xdg-open >/dev/null 2>&1; then\n        xdg-open \"http://localhost:3000\" >/dev/null 2>&1 || true\n    elif command -v gio >/dev/null 2>&1; then\n        gio open \"http://localhost:3000\" >/dev/null 2>&1 || true\n    elif command -v sensible-browser >/dev/null 2>&1; then\n        sensible-browser \"http://localhost:3000\" >/dev/null 2>&1 || true\n    elif python3 -c \"import webbrowser\" >/dev/null 2>&1; then\n        python3 -m webbrowser \"http://localhost:3000\" >/dev/null 2>&1 || true\n    fi\n) &\n\nexec npm run dev\n";
+export const AVVIA_APP_BAT_CONTENT = `@echo off
+chcp 65001 > nul
+title HydroPrint - Gestione e Stampa Cartellini (Windows 11)
 
-export const HYDRO_MEC_DESKTOP_CONTENT = "[Desktop Entry]\nVersion=1.0\nType=Application\nName=Hydro-Mec Stampa Cartellini\nGenericName=Gestione e Stampa Cartellini\nComment=Compilazione, calibrazione drag & drop e stampa cartellini prestampati Hydro-Mec\nExec=bash -c \"cd %k/.. 2>/dev/null || cd \\\"\\$(dirname \\\"\\$(realpath \\\"\\$0\\\")\\\")\\\"; ./avvia_app.sh\"\nIcon=printer\nTerminal=true\nCategories=Office;Development;Utility;\nKeywords=HydroMec;Stampa;Cartellini;Etichette;\nStartupNotify=true\n";
+echo ================================================================
+echo        HYDRO-MEC - GESTIONE E STAMPA CARTELLINI PRESTAMPATI
+echo           Avvio Applicazione Ottimizzata per Windows 11
+echo ================================================================
+echo.
 
-export const GUIDA_WINDOWS_CONTENT = "# Hydro-Mec \u2022 Guida Installazione su Windows 11\n\nQuesta guida descrive come installare ed eseguire l'applicazione **Hydro-Mec - Gestione e Stampa Cartellini** su **Windows 11** in officina o in ufficio tecnico.\n\n---\n\n## \ud83d\ude80 Metodo 1 (Consigliato): Installazione come App Desktop Nativa (PWA)\n*Nessun programma o runtime aggiuntivo richiesto. Funziona direttamente con Microsoft Edge o Google Chrome preinstallati su Windows 11.*\n\n1. **Apri il link dell'applicazione** nel browser **Microsoft Edge** o **Google Chrome**.\n2. **Installa l'App**:\n   - Su **Microsoft Edge**:\n     - Clicca sull'icona **\"App disponibile. Installa Hydro-Mec\"** (icona con un computer e una freccia) che compare all'estremit\u00e0 destra della barra degli indirizzi in alto.\n     - *Oppure*: Clicca sui tre puntini `...` in alto a destra \u2794 **App** \u2794 **Installa Hydro-Mec - Gestione e Stampa Cartellini**.\n   - Su **Google Chrome**:\n     - Clicca sull'icona **Installa** nella barra degli indirizzi o sui tre puntini `\u22ee` \u2794 **Salva e condividi** \u2794 **Installa pagina come app**.\n3. **Opzioni di Windows 11**:\n   - Nella finestra di dialogo di conferma, spunta:\n     - \u2611 **Aggiungi alla barra delle applicazioni**\n     - \u2611 **Crea collegamento sul desktop**\n     - \u2611 **Aggiungi a Start**\n4. **Fatto!** L'applicazione si aprir\u00e0 in una finestra desktop dedicata senza barre del browser, pronta all'uso come qualsiasi programma nativo di Windows 11.\n\n---\n\n## \ud83d\udcbb Metodo 2: Installazione Standalone Locale con Node.js (Offline)\n*Se desideri far girare l'applicazione completamente offline sulla rete aziendale o su un PC locale.*\n\n### Prerequisiti\n- **Node.js**: Scarica e installa la versione **LTS** gratuita da [https://nodejs.org/](https://nodejs.org/) (include `npm`).\n\n### Passaggi di Installazione:\n1. **Scarica il pacchetto del codice**:\n   - Clicca sul pulsante **\"Installa su Windows 11\"** nella barra in alto dell'applicazione e seleziona **\"Scarica Pacchetto ZIP per Windows 11\"**.\n   - Estrai l'archivio ZIP in una cartella a tuo piacimento (es. `C:\\HydroMec_Cartellini`).\n2. **Avvio Rapido (con 1 doppio clic)**:\n   - Fai doppio clic sul file `AVVIA_APP.bat` contenuto nella cartella.\n   - Lo script verificher\u00e0 Node.js, installer\u00e0 automaticamente le librerie al primo avvio e aprir\u00e0 il browser predefinito all'indirizzo:\n     ```\n     http://localhost:3000\n     ```\n3. **Avvio Manuale da PowerShell / Prompt dei Comandi**:\n   - Apri il terminale nella cartella del progetto ed esegui:\n     ```cmd\n     npm install\n     npm run dev\n     ```\n\n---\n\n## \ud83d\udda8\ufe0f Configurazione Stampante INEO3320 in Windows 11\nPer ottenere la centratura millimetrica perfetta sui cartellini prestampati:\n\n1. **Cassetto di alimentazione**:\n   - Inserire i cartellini prestampati nel **Cassetto Bypass (Vassoio Manuale)** della INEO3320 regolando le guide laterali.\n2. **Prompt di stampa di Windows (`Ctrl + P`)**:\n   - **Stampante**: Selezionare *Develop INEO3320*.\n   - **Formato carta**: Selezionare **A6** (per il cartellino *Materiale da Controllare 147.5 \u00d7 104 mm*).\n   - **Alimentazione carta**: **Bypass** (Vassoio manuale).\n   - **Orientamento**: **Orizzontale**.\n   - **Margini**: **Nessuno** (o Minimi).\n   - **Scala**: **100%** (o \"Dimensioni effettive\" / non adattare alla pagina).\n   - **Grafica di sfondo**: Se stampi su modulo prestampato gi\u00e0 colorato, lascia **disattivata** l'opzione \"Grafica di sfondo\". Se stampi su cartoncino bianco liscio, attiva il flag *\"Includi sfondo cartellino nella stampa\"*.\n\n---\n\n## \ud83d\udcbe Trasferimento Dati tra PC Diversi o Cambio Browser\nPer portare su un altro computer Windows 11 tutti gli articoli, lavoranti e la calibrazione salvata:\n1. Clicca sul pulsante **\"Backup / Cambia Browser\"** in alto.\n2. Clicca su **\"Scarica File di Backup (.json)\"**.\n3. Sul nuovo PC apri l'app, clicca su **\"Backup / Cambia Browser\"** \u2794 scheda **\"Importa Configurazione\"** e carica il file `.json`.\n4. Tutti i dati, i font e le coordinate mm saranno ripristinati istantaneamente!\n";
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [ATTENZIONE] Node.js non e' installato o non e' presente nel PATH.
+    echo Scarica e installa la versione LTS gratuita da: https://nodejs.org/
+    echo Dopo l'installazione, riavvia questo file AVVIA_APP.bat.
+    echo.
+    pause
+    exit /b 1
+)
 
-export const GUIDA_LINUX_CONTENT = "# Hydro-Mec \u2022 Guida Installazione ed Esecuzione su Linux\n\nQuesta guida descrive come installare ed eseguire l'applicazione **Hydro-Mec - Gestione e Stampa Cartellini** su qualsiasi distribuzione **Linux** (Ubuntu, Debian, Linux Mint, Fedora, RHEL, Arch Linux, Manjaro, openSUSE, ecc.).\n\n---\n\n## \ud83d\ude80 Metodo 1 (Consigliato): Installazione come App Desktop Nativa (PWA)\n*Il metodo pi\u00f9 rapido e integrato con il desktop Linux (GNOME, KDE Plasma, XFCE, Cinnamon, MATE). Non richiede l'installazione di Node.js.*\n\nFunziona con qualsiasi browser basato su Chromium disponibile per Linux (**Google Chrome**, **Chromium**, **Brave**, **Microsoft Edge per Linux**):\n\n1. **Apri l'applicazione nel browser** su Linux.\n2. **Installa l'App**:\n   - Clicca sull'icona **\"Installa applicazione\"** all'estremit\u00e0 destra della barra degli indirizzi.\n   - *Oppure* apri il menu del browser (`\u22ee` o `\u2261`) \u2794 **\"Salva e condividi\"** / **\"App\"** \u2794 **\"Installa pagina come app\"** (o *\"Installa Hydro-Mec\"*).\n3. **Integrazione con il Desktop Linux**:\n   - L'applicazione viene aggiunta automaticamente al menu delle applicazioni di sistema (`~/.local/share/applications/`), alla dash e al desktop.\n   - Si avvia in una finestra desktop dedicata e isolata, senza barre degli indirizzi o schede del browser, con prestazioni fulminee.\n\n---\n\n## \ud83d\udcbb Metodo 2: Pacchetto Sorgente Scaricabile (.tar.gz / .zip) & Script `avvia_app.sh`\n*Ideale per l'esecuzione 100% offline in officina, su server locale o su postazioni di lavoro Linux senza connessione internet.*\n\n### 1. Installazione Prerequisiti (Node.js)\nAssicurati che Node.js (versione 18+ o LTS) sia installato. Se non \u00e8 presente, installalo con il gestore pacchetti della tua distro:\n\n- **Ubuntu / Debian / Linux Mint**:\n  ```bash\n  sudo apt update\n  sudo apt install -y nodejs npm\n  ```\n- **Fedora / CentOS / RHEL**:\n  ```bash\n  sudo dnf install -y nodejs npm\n  ```\n- **Arch Linux / Manjaro**:\n  ```bash\n  sudo pacman -S nodejs npm\n  ```\n- **openSUSE**:\n  ```bash\n  sudo zypper install nodejs npm\n  ```\n\n### 2. Download ed Estrazione\n1. Clicca sul pulsante **\"Installa su Windows / Linux\"** nella barra in alto dell'applicazione.\n2. Scarica il file **`hydro-mec-stampa-cartellini-linux.tar.gz`** (o `.zip`).\n3. Estrai l'archivio nella tua cartella preferita (es. `~/HydroMec_Cartellini`):\n   ```bash\n   tar -xzf hydro-mec-stampa-cartellini-linux.tar.gz -C ~/HydroMec_Cartellini\n   cd ~/HydroMec_Cartellini\n   ```\n\n### 3. Avvio con 1 Clic tramite Script Bash\nRendi eseguibile e avvia lo script `avvia_app.sh`:\n```bash\nchmod +x avvia_app.sh\n./avvia_app.sh\n```\n- Lo script verificher\u00e0 la presenza di Node.js.\n- Al primo avvio installer\u00e0 automaticamente tutte le librerie necessarie con `npm install`.\n- Avvier\u00e0 il server locale e aprir\u00e0 automaticamente il browser su:\n  ```\n  http://localhost:3000\n  ```\n\n### 4. Creazione icona nel Menu Applicazioni Linux (.desktop)\nPer avviare l'app direttamente dal menu delle applicazioni o dal Desktop:\n```bash\nchmod +x Hydro-Mec.desktop\ncp Hydro-Mec.desktop ~/.local/share/applications/\n```\n\n---\n\n## \ud83d\udda8\ufe0f Configurazione Stampante Develop INEO3320 su Linux (CUPS)\nPer garantire che i testi stampati collimino al millimetro con le caselle prestampate:\n\n1. **Gestione Stampanti CUPS (`http://localhost:631` o Impostazioni di Sistema)**:\n   - Assicurati che la stampante *Develop INEO3320* (o driver PostScript/PCL generico Konica Minolta / Develop) sia configurata in rete.\n2. **Finestra di Stampa del Browser (`Ctrl + P`)**:\n   - **Destinazione**: Seleziona *Develop INEO3320*.\n   - **Formato Carta**: Seleziona **A6** (105 \u00d7 148 mm).\n   - **Alimentazione Carta / Cassetto**: Seleziona **Bypass / Vassoio Manuale** (dove sono posizionati i cartellini prestampati Hydro-Mec).\n   - **Orientamento**: **Orizzontale** (Landscape).\n   - **Scala**: Seleziona **100%** (o **Dimensioni effettive**, disattiva \"Adatta all'area stampabile\").\n   - **Margini**: Imposta **Nessuno** o **Minimi**.\n   - **Grafica di sfondo**:\n     - *Cartellini prestampati colorati originali*: **Disattivata** (stampa solo testo e barcode).\n     - *Fogli bianchi di prova*: **Attivata** per stampare anche la cornice grafica.\n\n---\n\n## \ud83d\udd04 Trasferimento Dati e Settaggi (Cross-Platform)\nI backup generati dal pulsante **\"Backup / Cambia Browser\"** sono file standard JSON (.json) e sono compatibili al 100% tra **Linux**, **Windows**, **macOS** e qualsiasi browser:\n1. Esporta il file `.json` su un PC.\n2. Copialo sull'altro PC (tramite chiavetta USB o rete interna).\n3. Clicca su **\"Backup / Cambia Browser\"** \u2794 **\"Importa Configurazione\"** per ripristinare codici articolo, lavoranti e calibrazioni millimetriche.\n";
+if not exist "node_modules\\" (
+    echo [1/2] Prima esecuzione rilevata.
+    echo       Installazione automatica pacchetti e librerie con npm...
+    call npm install --legacy-peer-deps || call npm install --force
+    if %errorlevel% neq 0 (
+        echo [ERRORE] Impossibile installare le dipendenze npm.
+        pause
+        exit /b 1
+    )
+    echo [OK] Dipendenze installate correttamente.
+)
+
+echo [2/2] Avvio del server locale HydroPrint su porta 3000...
+echo.
+echo L'applicazione verra' aperta automaticamente in Microsoft Edge
+echo in modalita' applicazione desktop standalone:
+echo http://localhost:3000
+echo.
+echo Per terminare l'applicazione, chiudi questa finestra o premi Ctrl+C.
+echo ================================================================
+echo.
+
+rem Avvio Edge in modalita' App per esperienza desktop nativa senza barre browser
+start msedge --app="http://localhost:3000" 2>nul || start "" "http://localhost:3000"
+
+call npm run dev
+
+pause
+`;
+
+export const AVVIA_POWERSHELL_PS1_CONTENT = `# HydroPrint - Script di Avvio e Creazione Collegamento per Windows 11
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+Write-Host "================================================================" -ForegroundColor Cyan
+Write-Host "       HYDRO-MEC - GESTIONE E STAMPA CARTELLINI PRESTAMPATI" -ForegroundColor White
+Write-Host "          Script PowerShell di Avvio per Windows 11" -ForegroundColor Yellow
+Write-Host "================================================================" -ForegroundColor Cyan
+Write-Host ""
+
+# 1. Verifica Node.js
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+    Write-Host "[ERRORE] Node.js non trovato. Installare Node.js LTS da https://nodejs.org/" -ForegroundColor Red
+    Pause
+    Exit 1
+}
+
+# 2. Crea collegamento Desktop se non esiste
+$DesktopPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop)
+$ShortcutFile = Join-Path $DesktopPath "Hydro-Mec Stampa Cartellini.lnk"
+
+if (-not (Test-Path $ShortcutFile)) {
+    try {
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut($ShortcutFile)
+        $CurrentDir = (Get-Item -Path ".").FullName
+        $Shortcut.TargetPath = Join-Path $CurrentDir "AVVIA_APP.bat"
+        $Shortcut.WorkingDirectory = $CurrentDir
+        $Shortcut.Description = "Avvia HydroPrint Cartellini Hydro-Mec su Windows 11"
+        $Shortcut.Save()
+        Write-Host "[OK] Collegamento creato con successo sul Desktop di Windows 11!" -ForegroundColor Green
+    } catch {
+        Write-Host "[INFO] Impossibile creare automaticamente il collegamento sul Desktop." -ForegroundColor Gray
+    }
+}
+
+# 3. Verifica dipendenze
+if (-not (Test-Path "node_modules")) {
+    Write-Host "[1/2] Installazione librerie npm in corso..." -ForegroundColor Cyan
+    npm install --legacy-peer-deps
+}
+
+# 4. Avvia browser Edge in modalita' app e avvia Vite
+Write-Host "[2/2] Avvio del server locale HydroPrint..." -ForegroundColor Green
+Start-Process "msedge" -ArgumentList "--app=http://localhost:3000" -ErrorAction SilentlyContinue
+
+npm run dev
+`;
+
+export const RISOLUZIONE_COMPRESSIONE_220MM_CONTENT = `# DIAGNOSI & RISOLUZIONE DEL PROBLEMA: COMPRESSIONE DEL CARTELLINO DA 220 MM A ~150 MM
+
+## 📌 Sintomo Riscontrato
+Quando si seleziona e si invia in stampa il cartellino **"Materiale in Lavorazione / Da Versare"** di dimensione nominale **220 × 87 mm**:
+- La stampa cartacea non occupa i 220 mm di larghezza del supporto prestampato inserito nel bypass.
+- L'intera grafica e tutti i testi risultano orizzontalmente compressi e rimpiccioliti su una larghezza di circa **148-150 mm**.
+- La parte destra del cartellino prestampato (ultimi 70 mm) rimane bianca, mentre le diciture "CODICE", "LANCIO", "Q.TA", "LAVORANTE" risultano tutte fuori sede verso sinistra.
+
+---
+
+## 🔬 Causa Tecnica Dettagliata (Root Cause Analysis)
+
+Nel software HydroPrint sono presenti due formati fisici distinti di cartellino:
+1. **Materiale da Controllare (Blu):** \`147.5 × 104 mm\`
+2. **Materiale in Lavorazione (Finito):** \`220 × 87 mm\`
+
+Il formato standard internazionale **ISO A6** misura esattamente **105 × 148 mm**.
+Il cartellino blu (147.5 × 104 mm) coincide al millimetro con il formato **A6**!
+Di conseguenza, il driver della stampante (Develop ineo 3320 / Konica Minolta / PCL6) in officina viene normalmente configurato dall'operatore con:
+- **Formato carta predefinito: A6**
+- **Cassetto di alimentazione: Bypass manuale**
+
+Quando l'operatore passa a stampare il cartellino da **220 mm**:
+
+### 1. Il limite di \`@page { size: auto; }\` nei CSS originali
+Nel foglio di stile originale \`index.css\`, la direttiva di stampa dichiarava:
+\`\`\`css
+@media print {
+  @page {
+    margin: 0 !important;
+    size: auto;
+  }
+}
+\`\`\`
+Quando \`size\` è impostato su \`auto\`, il motore di rendering Chromium (Microsoft Edge e Google Chrome su Windows 11) **non comunica al sistema operativo Windows una dimensione pagina esplicita personalizzata**. 
+Chromium interroga quindi il driver di Windows 11, il quale restituisce l'ultimo formato utilizzato o il formato predefinito della stampante, ovvero **A6 (148 mm)**.
+
+### 2. Il fattore di scala automatico di Chromium: 148mm / 220mm ≈ 67%
+Chromium rileva un elemento HTML (\`#print-root\`) con larghezza dichiarata di **220 mm**, da collocare all'interno di un foglio configurato a livello di sistema operativo come **A6 (148 mm)**.
+Quando nella finestra di stampa di Windows 11 è attiva l'opzione predefinita **"Adatta alla pagina"** (o "Adatta all'area stampabile"):
+$$\\text{Fattore di Riduzione} = \\frac{148\\text{ mm}}{220\\text{ mm}} \\approx 67.27\\%$$
+L'intero layout da 220 mm viene proporzionalmente ridotto del 33%, venendo **compresso e schiacciato esattamente nella larghezza di 148-150 mm** del formato A6!
+
+---
+
+## 🛠️ Come è Stato Risolto a Livello di Codice
+
+Abbiamo applicato una soluzione ingegneristica su 4 livelli:
+
+### 1. Iniezione Dinamica di \`@page\` con Dimensioni Esatte in Millimetri
+In \`src/components/PrintDocument.tsx\`, per ciascun cartellino viene ora iniettato un blocco CSS dedicato:
+- Per il cartellino da 220 mm:
+  \`\`\`css
+  @page {
+    size: 220mm 87mm !important;
+    margin: 0mm !important;
+  }
+  \`\`\`
+- Per il cartellino blu:
+  \`\`\`css
+  @page {
+    size: 147.5mm 104mm !important;
+    margin: 0mm !important;
+  }
+  \`\`\`
+In questo modo Microsoft Edge e Chromium comunicano direttamente allo spooler di Windows 11 che il documento richiede una pagina fisica di **220 mm di larghezza e 87 mm di altezza**, impedendo il fallback implicito sul formato A6.
+
+### 2. Rimozione dei vincoli \`width: 100%\` in \`index.css\`
+È stato rimosso il vincolo \`width: 100%\` su \`html\` e \`body\` a stampa, impostando invece \`overflow: hidden\` e dimensioni esatte in mm, evitando che il contenitore venga vincolato alla larghezza del foglio A6 memorizzato nel browser.
+
+### 3. Modalità Stampa "Foglio A4 con Scala 100% Antiriduzione"
+Per gli ambienti in cui il driver della stampante non permette all'operatore di salvare moduli personalizzati, è stata integrata la modalità alternativa **Foglio A4 Scala 100%**:
+Il cartellino da 220 × 87 mm viene collocato su un foglio A4 (297 × 210 mm) al **100% esatto delle sue dimensioni fisiche**, senza alcuna scala o compressione.
+
+---
+
+## 📋 Configurazione del Driver di Stampa Windows 11 (Develop INEO3320)
+
+Per ottenere una stampa millimetrica perfetta senza alcun intervento manuale ad ogni foglio, eseguire questa configurazione una tantum su Windows 11:
+
+### Passaggio 1: Creazione del Modulo Carta Personalizzato in Windows 11
+1. Premi la combinazione di tasti **\`Win + R\`**, digita:
+   \`\`\`cmd
+   control printers
+   \`\`\`
+   e premi **Invio**.
+2. Fai clic su una qualsiasi stampante nell'elenco e clicca in alto su **"Proprietà server di stampa"** (Print Server Properties).
+3. Nella scheda **"Moduli"**:
+   - Metti la spunta su **☑ Crea un nuovo modulo**.
+   - **Nome modulo:** digita \`Hydro-Mec 220x87\`.
+   - **Descrizione modulo:** seleziona unità **Metrico**.
+   - **Larghezza:** \`22,00 cm\` (oppure 220,0 mm).
+   - **Altezza:** \`8,70 cm\` (oppure 87,0 mm).
+   - **Margini stampante:** imposta tutti i margini (Sinistro, Destro, Superiore, Inferiore) a \`0,00 cm\`.
+4. Clicca su **"Salva modulo"** e poi su **"Chiudi"**.
+
+### Passaggio 2: Impostazione Cassetto Bypass su Develop INEO3320
+1. Fai clic con il tasto destro sulla stampante **Develop INEO3320** (o Konica Minolta).
+2. Seleziona **Preferenze di stampa** (Printing Preferences).
+3. Nella scheda **Carta / Finitura** (Paper/Quality):
+   - **Formato originale / Formato carta:** seleziona \`Hydro-Mec 220x87\` (oppure *Formato Personalizzato* e inserisci 220 mm × 87 mm).
+   - **Alimentazione carta / Cassetto:** seleziona **Vassoio Bypass (Manuale)**.
+   - **Tipo di carta:** Cartoncino / Carta spessa (Thick).
+4. Clicca su **Applica** e poi su **OK**.
+
+### Passaggio 3: Finestra di Stampa di Microsoft Edge / Chrome (\`Ctrl + P\`)
+Quando si apre la finestra di anteprima di stampa:
+- **Destinazione:** Develop INEO3320.
+- **Formato carta:** \`Hydro-Mec 220x87\` (o Definito da applicazione).
+- Clicca su **"Altre impostazioni"**:
+  - **Scala:** seleziona **100% (Effettiva)** ➔ **NON selezionare mai "Adatta alla pagina" o "Adatta all'area stampabile"!**
+  - **Margini:** seleziona **Nessuno**.
+  - **Grafica di sfondo:** disattivata se si stampa sopra i cartellini prestampati originali.
+
+Seguendo questa procedura, il cartellino da 220 mm verrà stampato con una precisione al decimo di millimetro senza alcuna compressione!
+`;
+
+export const GUIDA_WINDOWS_CONTENT = `# HydroPrint • Guida Completa per Windows 11
+
+Guida all'installazione, esecuzione e configurazione dell'applicazione **HydroPrint** su workstation e PC di reparto con **Windows 11**.
+
+---
+
+## 🚀 Metodo 1 (Consigliato): Installazione come App Desktop Windows 11 (PWA)
+*Nessun software da compilare, nessuna libreria da installare. Funziona immediatamente con Microsoft Edge preinstallato su Windows 11.*
+
+### Istruzioni passo-passo con Microsoft Edge:
+1. Apri l'indirizzo dell'applicazione in **Microsoft Edge**:
+2. Guarda l'estremità destra della **barra degli indirizzi in alto**:
+   - Vedrai comparire l'icona **"App disponibile. Installa HydroPrint"** (un monitor con freccia verso il basso).
+   - In alternativa, clicca sui tre puntini in alto a destra \`...\` ➔ **App** ➔ **Installa questo sito come app**.
+3. Nella finestra di dialogo di conferma di Windows 11:
+   - Lascia il nome predefinito **HydroPrint - Stampa Cartellini Hydro-Mec**.
+   - Spunta le opzioni desiderate:
+     - ☑ **Aggiungi alla barra delle applicazioni**
+     - ☑ **Crea collegamento sul desktop**
+     - ☑ **Aggiungi a Start**
+4. Clicca su **Installa**.
+5. L'applicazione apparirà ora come un programma Windows indipendente, in una finestra pulita senza elementi del browser, e potrà essere avviata direttamente dal Desktop o dalla Barra delle Applicazioni.
+
+---
+
+## 💻 Metodo 2: Esecuzione Offline Locale con Node.js & Script \`AVVIA_APP.bat\`
+*Ideale per postazioni d'officina o computer di collaudo che devono funzionare al 100% offline sulla rete locale LAN.*
+
+### Prerequisiti:
+- **Node.js (versione 18 LTS o superiore)**: Scaricabile gratuitamente dal sito ufficiale [https://nodejs.org/](https://nodejs.org/).
+
+### Avvio con 1 Clic:
+1. Scarica ed estrai la cartella del progetto in \`C:\\HydroPrint\` (o nella cartella desiderata).
+2. Fai doppio clic sul file **\`AVVIA_APP.bat\`**:
+   - Lo script verifica la presenza di Node.js.
+   - Alla prima esecuzione esegue in automatico l'installazione delle librerie con \`npm install\`.
+   - Avvia il server locale sulla porta 3000.
+   - Apre in automatico **Microsoft Edge in modalità App Desktop** all'indirizzo \`http://localhost:3000\`.
+
+### Avvio Avanzato con PowerShell:
+È disponibile anche lo script **\`Avvia-HydroPrint-Windows11.ps1\`**, che crea in automatico il collegamento \`.lnk\` con icona sul Desktop dell'utente corrente se non è già presente.
+
+---
+
+## 🖨️ Calibrazione Stampante & Risoluzione Compressione 220 mm
+Consultare il documento specifico **\`RISOLUZIONE_COMPRESSIONE_220MM.md\`** (accessibile anche dal pulsante "Diagnosi Compressione 220mm" nell'applicazione) per le istruzioni dettagliate sulla creazione del modulo carta personalizzato in Windows 11 e la configurazione del vassoio Bypass.
+
+---
+
+## 💾 Salvataggio e Backup Dati
+Tutti i codici articolo, i nomi dei lavoranti e le coordinate di calibrazione millimetrica sono salvati in modo permanente nella memoria locale del PC (LocalStorage v4).
+Tramite il pulsante **"Backup / Cambia Browser"** in alto è possibile:
+1. Scaricare il file di backup \`.json\` completo con un clic.
+2. Trasferire il file su qualsiasi altro PC con Windows 11 tramite chiavetta USB o cartella condivisa di rete.
+3. Ripristinare istantaneamente tutta la configurazione sul nuovo computer.
+`;

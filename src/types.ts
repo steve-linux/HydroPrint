@@ -60,6 +60,9 @@ export interface AppSettings {
   printBorder?: boolean; // Stampa contorno sottile cartellino (per test o foglio bianco)
   zoomLevel: number; // In percentage
   showGridLines: boolean; // Linee guida mm
+  printMode?: 'direct' | 'a4_bypass'; // Modalità stampa: formato diretto @page vs foglio A4 scala 100%
+  a4Alignment?: 'top_left' | 'center'; // Allineamento sul foglio A4
+  showCutMarks?: boolean; // Mostra guide di ritaglio
   customBgImages?: {
     controllare?: string;
     versare?: string;

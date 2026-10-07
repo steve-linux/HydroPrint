@@ -36,7 +36,8 @@ import {
   CheckCircle2,
   Info,
   Laptop,
-  Download
+  Download,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function App() {
@@ -174,6 +175,7 @@ export default function App() {
   const [csvModalType, setCsvModalType] = useState<'articoli' | 'lavoranti'>('articoli');
   const [backupModalOpen, setBackupModalOpen] = useState(false);
   const [windowsInstallModalOpen, setWindowsInstallModalOpen] = useState(false);
+  const [windowsModalTab, setWindowsModalTab] = useState<'compression' | 'pwa' | 'offline' | 'driver'>('compression');
 
   // Toast Notifica
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' } | null>(null);
@@ -382,13 +384,13 @@ export default function App() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Stampa professionale su stampante INEO3320 (A6 Bypass)
+                Stampa per Windows 11 • INEO3320 (Bypass 220×87 e 147.5×104 mm)
               </p>
             </div>
           </div>
 
-          {/* Quick Lock & Global Backup Actions */}
-          <div className="flex items-center gap-2.5">
+          {/* Quick Actions Header */}
+          <div className="flex items-center gap-2">
             {/* Quick Lock Toggle in Header */}
             <button
               type="button"
@@ -413,16 +415,34 @@ export default function App() {
               )}
             </button>
 
-            {/* Windows & Linux Desktop / Download Code Button */}
+            {/* Quick Fix Button for 220mm format */}
             <button
               type="button"
-              onClick={() => setWindowsInstallModalOpen(true)}
+              onClick={() => {
+                setWindowsModalTab('compression');
+                setWindowsInstallModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
+              title="Diagnostica e risoluzione per cartellino 220 mm compresso su 150 mm"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-white animate-pulse" />
+              <span className="hidden sm:inline">Risolvi 220 mm</span>
+              <span className="sm:hidden">220 mm</span>
+            </button>
+
+            {/* Windows 11 Desktop / Download Code Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setWindowsModalTab('pwa');
+                setWindowsInstallModalOpen(true);
+              }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
-              title="Installa come App Desktop su Linux o Windows, oppure scarica i pacchetti offline (.tar.gz / .zip)"
+              title="Guida Windows 11, installazione come app desktop in Edge e script di avvio"
             >
               <Laptop className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Installa su Linux / Windows</span>
-              <span className="sm:hidden">Linux / Win</span>
+              <span className="hidden sm:inline">Guida Windows 11</span>
+              <span className="sm:hidden">Win 11</span>
             </button>
 
             {/* Backup / Restore Button for Cross-browser transfer */}
@@ -433,7 +453,7 @@ export default function App() {
               title="Esporta o importa l'intera configurazione per cambiare browser o PC"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Backup / Cambia Browser</span>
+              <span className="hidden sm:inline">Backup / Ripristino</span>
               <span className="sm:hidden">Backup</span>
             </button>
           </div>
@@ -512,6 +532,10 @@ export default function App() {
             onToggleLock={handleToggleLock}
             onUpdateSettings={handleUpdateSettings}
             onPrint={handlePrint}
+            onOpenWindowsGuide={(tab) => {
+              setWindowsModalTab(tab || 'compression');
+              setWindowsInstallModalOpen(true);
+            }}
           />
         )}
 
@@ -592,11 +616,12 @@ export default function App() {
       <WindowsInstallModal
         isOpen={windowsInstallModalOpen}
         onClose={() => setWindowsInstallModalOpen(false)}
+        initialTab={windowsModalTab}
       />
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500 no-print">
-        Hydro-Mec Stampa Cartellini • Progettato per stampanti laser con cassetto Bypass A6 (INEO3320) • Backup e dati salvati localmente nel browser.
+        HydroPrint • Ottimizzato per Windows 11 & stampante Develop INEO3320 (Bypass: 220×87 mm e 147.5×104 mm) • Dati salvati localmente nel browser.
       </footer>
     </div>
 

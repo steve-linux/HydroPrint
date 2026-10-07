@@ -1,43 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Monitor,
   Download,
-  Terminal,
   Printer,
   CheckCircle,
   Copy,
   Check,
   X,
   Laptop,
-  FolderArchive,
-  Play,
   FileCode,
   FileText,
-  ShieldCheck,
-  AlertCircle
+  AlertTriangle,
+  HelpCircle,
+  Cpu,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import {
   AVVIA_APP_BAT_CONTENT,
-  AVVIA_APP_SH_CONTENT,
-  HYDRO_MEC_DESKTOP_CONTENT,
-  GUIDA_WINDOWS_CONTENT,
-  GUIDA_LINUX_CONTENT
+  AVVIA_POWERSHELL_PS1_CONTENT,
+  RISOLUZIONE_COMPRESSIONE_220MM_CONTENT,
+  GUIDA_WINDOWS_CONTENT
 } from '../constants/installScripts';
 
 interface WindowsInstallModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: 'compression' | 'pwa' | 'offline' | 'driver';
 }
 
 export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
   isOpen,
-  onClose
+  onClose,
+  initialTab = 'compression'
 }) => {
-  const [activeTab, setActiveTab] = useState<'linux' | 'windows' | 'pwa' | 'printer'>('linux');
+  const [activeTab, setActiveTab] = useState<'compression' | 'pwa' | 'offline' | 'driver'>(initialTab);
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const [installPromptEvent, setInstallPromptEvent] = useState<any>(null);
   const [isPwaInstalled, setIsPwaInstalled] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab, isOpen]);
 
   useEffect(() => {
     const isStandalone =
@@ -58,7 +62,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
 
   const handleInstallPwa = async () => {
     if (!installPromptEvent) {
-      alert('Per installare l\'app:\n1. Clicca sui tre puntini (...) o sull\'icona "Installa" nella barra degli indirizzi del browser (Chrome, Edge, Brave, Chromium).\n2. Clicca su "Installa applicazione" per creare l\'icona nel menu e sul desktop.');
+      alert('Per installare l\'app in Microsoft Edge su Windows 11:\n1. Clicca sull\'icona "Installa" all\'estremità destra della barra degli indirizzi in alto.\n2. Oppure apri il menu (...) ➔ "App" ➔ "Installa questo sito come app".\n3. Spunta "Crea collegamento sul desktop" e conferma.');
       return;
     }
     await installPromptEvent.prompt();
@@ -75,404 +79,296 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
     setTimeout(() => setCopiedCmd(null), 2500);
   };
 
-  const handleDownloadArchive = async (url: string, filename: string) => {
-    try {
-      const res = await fetch(url);
-      if (res.ok) {
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(blobUrl);
-        }, 1500);
-        setDownloadSuccess(filename);
-        setTimeout(() => setDownloadSuccess(null), 4000);
-        return;
-      }
-    } catch (e) {
-      console.warn('Fetch blob download failed, falling back to direct anchor link', e);
-    }
-
-    try {
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        document.body.removeChild(link);
-      }, 1000);
-      setDownloadSuccess(filename);
-      setTimeout(() => setDownloadSuccess(null), 4000);
-    } catch (e) {
-      console.error('Error downloading file', e);
-      window.location.href = url;
-    }
-  };
-
   const handleDownloadTextFile = (content: string, filename: string, mimeType: string = 'text/plain;charset=utf-8') => {
     try {
       const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
+      link.href = blobUrl;
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       setTimeout(() => {
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 1000);
+        URL.revokeObjectURL(blobUrl);
+      }, 1500);
       setDownloadSuccess(filename);
       setTimeout(() => setDownloadSuccess(null), 4000);
     } catch (e) {
-      console.error('Error downloading text file', e);
+      console.error('Error generating download blob', e);
+    }
+  };
+
+  const handleDownloadZipPackage = async () => {
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+
+      // Script di avvio per Windows 11
+      zip.file('AVVIA_APP.bat', AVVIA_APP_BAT_CONTENT);
+      zip.file('Avvia-HydroPrint-Windows11.ps1', AVVIA_POWERSHELL_PS1_CONTENT);
+      zip.file('GUIDA_INSTALLAZIONE_WINDOWS_11.md', GUIDA_WINDOWS_CONTENT);
+      zip.file('RISOLUZIONE_COMPRESSIONE_220MM.md', RISOLUZIONE_COMPRESSIONE_220MM_CONTENT);
+
+      // Informazioni di versione
+      zip.file(
+        'VERSIONE_WINDOWS_11.txt',
+        `HydroPrint per Windows 11\nVersione: 4.1.0 (Windows 11 Edition)\nData rilascio: ${new Date().toLocaleDateString('it-IT')}\nSupporto formati: 220x87mm (Bypass) e 147.5x104mm (A6 Bypass)\nStampante target: Develop INEO3320 / Konica Minolta`
+      );
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const blobUrl = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', 'hydro-mec-stampa-cartellini-windows11.zip');
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      }, 1500);
+      setDownloadSuccess('hydro-mec-stampa-cartellini-windows11.zip');
+      setTimeout(() => setDownloadSuccess(null), 4000);
+    } catch (err) {
+      console.error('Errore creazione zip in-memory', err);
+      // Fallback
+      handleDownloadTextFile(AVVIA_APP_BAT_CONTENT, 'AVVIA_APP.bat', 'application/x-bat');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/75 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-900 text-white">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 rounded-xl text-white">
+            <div className="p-2 bg-blue-600 rounded-xl text-white shadow-md">
               <Laptop className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                Download & Installazione (Linux & Windows)
-              </h2>
-              <p className="text-xs text-slate-300">
-                Pacchetti verificati al 100% per apertura immediata in Esplora Risorse / Archive Manager
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-base leading-tight">
+                  HydroPrint • Guida & Risoluzione per Windows 11
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40">
+                  Solo Windows 11
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Risoluzione compressione cartellino 220mm, configurazione driver INEO3320 e avvio standalone
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Success toast inside modal */}
-        {downloadSuccess && (
-          <div className="bg-emerald-600 text-white text-xs px-6 py-2.5 flex items-center justify-between animate-in slide-in-from-top duration-200">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-emerald-200" />
-              <span>
-                File <b>{downloadSuccess}</b> generato e scaricato correttamente! È pronto per essere estratto.
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setDownloadSuccess(null)}
-              className="text-emerald-200 hover:text-white cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Tab switch */}
-        <div className="flex border-b border-slate-200 bg-slate-100 px-6 pt-2 overflow-x-auto">
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-slate-200 bg-slate-100 px-6 pt-2 overflow-x-auto scrollbar-none gap-2">
           <button
             type="button"
-            onClick={() => setActiveTab('linux')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
-              activeTab === 'linux'
-                ? 'border-emerald-600 text-emerald-800 bg-white rounded-t-lg shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+            onClick={() => setActiveTab('compression')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap ${
+              activeTab === 'compression'
+                ? 'bg-white text-rose-700 border-t-2 border-rose-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Terminal className="w-4 h-4 text-emerald-600" />
-            🐧 Versione Linux (Ubuntu / Debian / Fedora)
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('windows')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
-              activeTab === 'windows'
-                ? 'border-blue-600 text-blue-700 bg-white rounded-t-lg shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            <Laptop className="w-4 h-4 text-blue-600" />
-            🪟 Versione Windows 11
+            <AlertTriangle className="w-4 h-4 text-rose-600" />
+            <span>🔍 Problema Compressione 220 mm</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('pwa')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap ${
               activeTab === 'pwa'
-                ? 'border-indigo-600 text-indigo-700 bg-white rounded-t-lg shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+                ? 'bg-white text-blue-700 border-t-2 border-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Monitor className="w-4 h-4 text-indigo-600" />
-            App Desktop Nativa (PWA 1-Clic)
+            <Laptop className="w-4 h-4 text-blue-600" />
+            <span>🚀 App Desktop Edge (PWA)</span>
           </button>
 
           <button
             type="button"
-            onClick={() => setActiveTab('printer')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
-              activeTab === 'printer'
-                ? 'border-amber-600 text-amber-800 bg-white rounded-t-lg shadow-xs'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
+            onClick={() => setActiveTab('offline')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap ${
+              activeTab === 'offline'
+                ? 'bg-white text-emerald-700 border-t-2 border-emerald-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <FileCode className="w-4 h-4 text-emerald-600" />
+            <span>💻 Avvio Offline (.bat / PowerShell)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('driver')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all whitespace-nowrap ${
+              activeTab === 'driver'
+                ? 'bg-white text-amber-700 border-t-2 border-amber-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Printer className="w-4 h-4 text-amber-600" />
-            Setup Stampante INEO3320
+            <span>🖨️ Configurazione INEO3320</span>
           </button>
         </div>
 
-        {/* Body content */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1 text-slate-700 text-xs">
-          {/* TAB LINUX */}
-          {activeTab === 'linux' && (
-            <div className="space-y-4 animate-in fade-in duration-100">
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-emerald-950 text-sm mb-1">
-                    Pacchetto Linux Certificato & Pronto all'Uso
-                  </h4>
-                  <p className="text-emerald-800 leading-relaxed">
-                    Il pacchetto viene generato istantaneamente con tutti i file sorgente, le immagini di sfondo, lo script <b>`avvia_app.sh`</b> e il file <b>`Hydro-Mec.desktop`</b> per integrare l'app nel menu del desktop (GNOME, KDE Plasma, XFCE).
-                  </p>
+        {/* Content Body */}
+        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-slate-700">
+          {downloadSuccess && (
+            <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
+              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>File <b>{downloadSuccess}</b> generato e scaricato sul tuo PC Windows 11!</span>
+            </div>
+          )}
+
+          {/* TAB 1: RISOLUZIONE COMPRESSIONE 220 MM */}
+          {activeTab === 'compression' && (
+            <div className="space-y-5 animate-in fade-in duration-100">
+              {/* Highlight Box */}
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-rose-600 text-white rounded-lg shrink-0 mt-0.5">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-rose-950 text-sm mb-1">
+                      Perché la Stampa da 220 mm Risulta Compressa a ~150 mm?
+                    </h4>
+                    <p className="text-rose-900 text-xs leading-relaxed">
+                      La causa è la discordanza tra il formato <b>A6 (148 × 105 mm)</b> utilizzato per il cartellino blu e il formato <b>220 × 87 mm</b> del materiale in lavorazione. Quando Edge o Windows 11 mantengono l'impostazione "Adatta alla pagina" o il formato A6 memorizzato, il browser calcola il rapporto <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-rose-300">148 mm / 220 mm ≈ 67%</span> e schiaccia l'intera stampa nella larghezza di 150 mm!
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Linux Download Buttons */}
-              <div className="space-y-2">
-                <span className="font-bold text-slate-800 block text-xs">
-                  Scarica Pacchetto Completo (Scegli il formato che preferisci):
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleDownloadArchive('/hydro-mec-stampa-cartellini-linux.tar.gz', 'hydro-mec-stampa-cartellini-linux.tar.gz')}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer"
-                  >
-                    <FolderArchive className="w-4 h-4" />
-                    <span>📥 Scarica Pacchetto (.tar.gz)</span>
-                  </button>
+              {/* Visual Schema Comparison */}
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+                <h5 className="font-bold text-xs uppercase tracking-wider text-slate-600">
+                  Confronto Dimensionale dei Formati in Officina:
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-white rounded-lg border border-blue-200 space-y-1">
+                    <span className="font-bold text-blue-900 flex items-center justify-between">
+                      <span>1. Cartellino Blu (Controllare)</span>
+                      <span className="font-mono bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[11px]">147.5 × 104 mm</span>
+                    </span>
+                    <p className="text-slate-600 text-[11px]">
+                      Coincide con il formato standard internazionale <b>A6 (148 × 105 mm)</b>. Per questo motivo il driver di Windows 11 lo stampa correttamente senza alcuna compressione.
+                    </p>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleDownloadArchive('/hydro-mec-stampa-cartellini-linux.zip', 'hydro-mec-stampa-cartellini-linux.zip')}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer"
-                  >
-                    <FolderArchive className="w-4 h-4" />
-                    <span>📥 Scarica Pacchetto (.zip)</span>
-                  </button>
-                </div>
-
-                {/* Single file downloads */}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => handleDownloadTextFile(AVVIA_APP_SH_CONTENT, 'avvia_app.sh', 'application/x-sh')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold border border-slate-300 transition-colors cursor-pointer"
-                  >
-                    <FileCode className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Scarica solo avvia_app.sh</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDownloadTextFile(HYDRO_MEC_DESKTOP_CONTENT, 'Hydro-Mec.desktop', 'application/x-desktop')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold border border-slate-300 transition-colors cursor-pointer"
-                  >
-                    <Monitor className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Scarica Hydro-Mec.desktop</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDownloadTextFile(GUIDA_LINUX_CONTENT, 'GUIDA_INSTALLAZIONE_LINUX.md', 'text/markdown;charset=utf-8')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold border border-slate-300 transition-colors cursor-pointer"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Guida Linux (.md)</span>
-                  </button>
+                  <div className="p-3 bg-white rounded-lg border border-amber-200 space-y-1">
+                    <span className="font-bold text-amber-900 flex items-center justify-between">
+                      <span>2. Cartellino Finito (Lavorazione)</span>
+                      <span className="font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[11px]">220 × 87 mm</span>
+                    </span>
+                    <p className="text-slate-600 text-[11px]">
+                      È <b>72 mm più largo dell'A6</b>. Se stampato con impostazione A6, il driver o il browser riduce la larghezza da 220 a 148 mm, lasciando vuota la parte destra del foglio!
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Steps for Linux */}
-              <div className="space-y-3 pt-2">
-                <h5 className="font-bold text-slate-900">Passaggi rapidi per terminale Linux:</h5>
+              {/* Steps to Fix */}
+              <div className="space-y-3">
+                <h5 className="font-bold text-xs uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <span>I 3 Passaggi per Risolvere Definitivamente su Windows 11:</span>
+                </h5>
 
-                {/* Passo 1 */}
-                <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5">
-                  <div className="font-bold text-slate-800">1. Installa Node.js se non presente sul PC:</div>
-                  <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-md font-mono text-[11px] flex items-center justify-between">
-                    <code>sudo apt update && sudo apt install -y nodejs npm</code>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard('sudo apt update && sudo apt install -y nodejs npm', 'cmd_apt')}
-                      className="text-slate-400 hover:text-white cursor-pointer"
-                      title="Copia comando"
-                    >
-                      {copiedCmd === 'cmd_apt' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
+                <div className="space-y-2.5">
+                  <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-1">
+                    <div className="font-bold text-slate-900 flex items-center gap-2 text-xs">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                      <span>Correzione Software Applicata nel Codice (Già Attiva)</span>
+                    </div>
+                    <p className="text-slate-600 text-xs pl-7">
+                      Abbiamo integrato in questa versione l'iniezione dinamica della regola CSS <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono">@page &#123; size: 220mm 87mm; margin: 0; &#125;</code>. Quando premi Stampa, Edge richiede esplicitamente a Windows 11 un foglio largo 220 mm invece di ereditare il vecchio formato A6.
+                    </p>
                   </div>
-                  <span className="text-[11px] text-slate-500">
-                    (Su Fedora: <code>sudo dnf install nodejs npm</code> | Su Arch: <code>sudo pacman -S nodejs npm</code>)
-                  </span>
-                </div>
 
-                {/* Passo 2 */}
-                <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5">
-                  <div className="font-bold text-slate-800">2. Estrai l'archivio scaricato:</div>
-                  <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-md font-mono text-[11px] flex items-center justify-between">
-                    <code>tar -xzf hydro-mec-stampa-cartellini-linux.tar.gz</code>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard('tar -xzf hydro-mec-stampa-cartellini-linux.tar.gz', 'cmd_tar')}
-                      className="text-slate-400 hover:text-white cursor-pointer"
-                      title="Copia comando"
-                    >
-                      {copiedCmd === 'cmd_tar' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
+                  <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-1">
+                    <div className="font-bold text-slate-900 flex items-center gap-2 text-xs">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                      <span>Impostazione Finestra di Stampa Microsoft Edge (Ctrl + P)</span>
+                    </div>
+                    <ul className="text-slate-600 text-xs pl-7 list-disc space-y-1">
+                      <li><b>Scala:</b> Seleziona <b>100% (o Effettiva)</b>. <span className="text-rose-600 font-bold">NON selezionare mai "Adatta alla pagina" o "Adatta all'area stampabile"!</span></li>
+                      <li><b>Margini:</b> Imposta su <b>Nessuno</b>.</li>
+                      <li><b>Grafica di sfondo:</b> Lascia disattivata se stampi sopra i cartellini prestampati originali.</li>
+                    </ul>
                   </div>
-                  <span className="text-[11px] text-slate-500">
-                    Oppure per il file ZIP: <code>unzip hydro-mec-stampa-cartellini-linux.zip</code>
-                  </span>
-                </div>
 
-                {/* Passo 3 */}
-                <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5">
-                  <div className="font-bold text-slate-800">3. Avvia con 1 comando:</div>
-                  <div className="bg-slate-900 text-emerald-400 p-2.5 rounded-md font-mono text-[11px] flex items-center justify-between">
-                    <code>chmod +x avvia_app.sh && ./avvia_app.sh</code>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard('chmod +x avvia_app.sh && ./avvia_app.sh', 'cmd_run')}
-                      className="text-slate-400 hover:text-white cursor-pointer"
-                      title="Copia comando"
-                    >
-                      {copiedCmd === 'cmd_run' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    </button>
+                  <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-1">
+                    <div className="font-bold text-slate-900 flex items-center gap-2 text-xs">
+                      <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                      <span>Creazione Modulo Utente Personalizzato 220×87 mm in Windows 11</span>
+                    </div>
+                    <div className="text-slate-600 text-xs pl-7 space-y-1">
+                      <p>
+                        Per far sì che la stampante Develop INEO3320 non forzi il cassetto su A6:
+                      </p>
+                      <ol className="list-decimal list-inside space-y-0.5 text-slate-700">
+                        <li>Premi <code className="bg-slate-100 px-1 font-bold">Win + R</code>, scrivi <code className="bg-slate-100 px-1 font-bold">control printers</code> e premi Invio.</li>
+                        <li>Clicca in alto su <b>Proprietà server di stampa</b>.</li>
+                        <li>Scheda <b>Moduli</b> ➔ Spunta <b>Crea un nuovo modulo</b> ➔ Nome: <code className="bg-slate-100 px-1 font-bold">Hydro-Mec 220x87</code>.</li>
+                        <li>Imposta: Larghezza <b>22,00 cm</b>, Altezza <b>8,70 cm</b>, Margini <b>0,00 cm</b> ➔ Clicca <b>Salva modulo</b>.</li>
+                        <li>Nelle Proprietà di stampa di INEO3320, seleziona questo formato per il <b>Cassetto Bypass</b>.</li>
+                      </ol>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500">
-                    Lo script installerà in automatico le dipendenze al primo avvio e aprirà il browser predefinito su <b>http://localhost:3000</b>.
-                  </p>
                 </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadTextFile(RISOLUZIONE_COMPRESSIONE_220MM_CONTENT, 'RISOLUZIONE_COMPRESSIONE_220MM.md')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <FileText className="w-4 h-4 text-blue-400" />
+                  <span>Scarica Guida Tecnica Completa (.md)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('offline')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <span>Script & Pacchetto Windows 11</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           )}
 
-          {/* TAB WINDOWS */}
-          {activeTab === 'windows' && (
-            <div className="space-y-4 animate-in fade-in duration-100">
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-blue-950 text-sm mb-1">
-                    Pacchetto Windows 11 Certificato & Verificato
-                  </h4>
-                  <p className="text-blue-800 leading-relaxed">
-                    Scarica il pacchetto ZIP compresso in formato standard. Include tutti i sorgenti, le icone, gli sfondi e il file <b>`AVVIA_APP.bat`</b> che avvia il programma con un semplice doppio clic.
-                  </p>
-                </div>
-              </div>
-
-              {/* Download Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleDownloadArchive('/hydro-mec-stampa-cartellini-windows11.zip', 'hydro-mec-stampa-cartellini-windows11.zip')}
-                  className="flex-1 flex items-center justify-center gap-2.5 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors cursor-pointer"
-                >
-                  <FolderArchive className="w-4 h-4" />
-                  <span>📥 Scarica Pacchetto Windows (.ZIP)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDownloadTextFile(AVVIA_APP_BAT_CONTENT, 'AVVIA_APP.bat', 'application/x-bat')}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition-colors cursor-pointer"
-                  title="Scarica solo lo script di avvio AVVIA_APP.bat"
-                >
-                  <Play className="w-4 h-4 text-emerald-600" />
-                  <span>Solo AVVIA_APP.bat</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDownloadTextFile(GUIDA_WINDOWS_CONTENT, 'GUIDA_INSTALLAZIONE_WINDOWS_11.md', 'text/markdown;charset=utf-8')}
-                  className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl border border-slate-300 transition-colors cursor-pointer"
-                  title="Scarica la guida completa in formato Markdown"
-                >
-                  <FileText className="w-4 h-4 text-blue-600" />
-                  <span>Guida Windows (.md)</span>
-                </button>
-              </div>
-
-              {/* Instructions steps */}
-              <div className="space-y-3 pt-2">
-                <h5 className="font-bold text-slate-900">Passaggi di installazione su Windows 11:</h5>
-
-                <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                  <div className="font-bold text-slate-800">Passo 1: Installa Node.js (se non presente)</div>
-                  <p className="text-slate-500">
-                    Scarica la versione LTS gratuita da{' '}
-                    <a
-                      href="https://nodejs.org/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 hover:underline font-bold"
-                    >
-                      https://nodejs.org/
-                    </a>{' '}
-                    ed esegui l'installer avanti-avanti.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                  <div className="font-bold text-slate-800">Passo 2: Estrai lo ZIP scaricato</div>
-                  <p className="text-slate-500">
-                    Fai tasto destro sul file `.zip` ➔ <b>Estrai tutto</b> in una cartella a piacere (es. <code>C:\HydroMec_Cartellini</code>).
-                  </p>
-                </div>
-
-                <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2">
-                  <div className="font-bold text-slate-800">Passo 3: Doppio Clic su AVVIA_APP.bat</div>
-                  <p className="text-slate-500">
-                    Basta fare doppio clic su <b>AVVIA_APP.bat</b>: installerà in automatico le dipendenze al primo avvio e aprirà l'app su <code>http://localhost:3000</code>.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB PWA */}
+          {/* TAB 2: PWA EDGE WINDOWS 11 */}
           {activeTab === 'pwa' && (
             <div className="space-y-4 animate-in fade-in duration-100">
-              <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
+                <Laptop className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-indigo-950 text-sm mb-1">
-                    Il Metodo Più Semplice: App Desktop Nativa (Zero Installazioni)
+                  <h4 className="font-bold text-blue-950 text-sm mb-1">
+                    Metodo Consigliato: Installazione Diretta con Microsoft Edge su Windows 11
                   </h4>
-                  <p className="text-indigo-800 leading-relaxed">
-                    Non serve estrarre archivi né installare Node.js. Tramite Chrome, Edge o Chromium, l'app si installa direttamente sul computer come programma desktop nativo sia su <b>Windows 11</b> che su <b>Linux</b>!
+                  <p className="text-blue-900 text-xs leading-relaxed">
+                    Nessun programma o runtime aggiuntivo richiesto. L'applicazione si installa con 1 clic direttamente in Microsoft Edge come programma desktop nativo di Windows 11, con la propria icona nella Barra delle Applicazioni e sul Desktop.
                   </p>
                 </div>
               </div>
 
-              {/* Install trigger button */}
               <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <span className="font-bold text-slate-900 block text-sm">
@@ -480,97 +376,175 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
                   </span>
                   <span className="text-slate-500 text-[11px]">
                     {isPwaInstalled
-                      ? 'L\'app è già in esecuzione come finestra desktop standalone.'
-                      : 'Clicca qui sotto o usa l\'icona nella barra degli indirizzi del browser.'}
+                      ? 'L\'app è già in esecuzione come finestra desktop standalone di Windows 11.'
+                      : 'Clicca qui sotto per aggiungere HydroPrint alle app di Windows 11.'}
                   </span>
                 </div>
-
                 {!isPwaInstalled && (
                   <button
                     type="button"
                     onClick={handleInstallPwa}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-colors shrink-0 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition-colors shrink-0 cursor-pointer text-xs"
                   >
                     <Download className="w-4 h-4" />
-                    <span>Installa come App Desktop</span>
+                    <span>Installa come App Windows 11</span>
                   </button>
                 )}
               </div>
 
-              {/* Step-by-step visual instructions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border border-slate-200 rounded-xl bg-white space-y-2">
-                  <div className="font-bold text-slate-900 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">L</span>
-                    <span>Su Linux (Chrome / Chromium / Brave / Edge)</span>
-                  </div>
-                  <ol className="list-decimal list-inside space-y-1.5 text-slate-600 pl-1">
-                    <li>Apri il link dell'app nel browser Linux</li>
-                    <li>Clicca sull'icona <b>Installa</b> nella barra degli indirizzi in alto a destra</li>
-                    <li>Oppure clicca su <b>⋮</b> ➔ <b>Salva e condividi</b> ➔ <b>Installa come app</b></li>
-                    <li>L'app compare immediatamente nel menu applicazioni e nella dock di Linux!</li>
-                  </ol>
+              <div className="p-4 border border-slate-200 rounded-xl bg-white space-y-2">
+                <div className="font-bold text-slate-900 flex items-center gap-2 text-xs">
+                  <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">W11</span>
+                  <span>Istruzioni Visive per Microsoft Edge su Windows 11:</span>
                 </div>
-
-                <div className="p-4 border border-slate-200 rounded-xl bg-white space-y-2">
-                  <div className="font-bold text-slate-900 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">W</span>
-                    <span>Su Windows 11 (Edge o Chrome)</span>
-                  </div>
-                  <ol className="list-decimal list-inside space-y-1.5 text-slate-600 pl-1">
-                    <li>Apri l'app in Edge o Chrome</li>
-                    <li>Clicca sull'icona <b>"Installa app"</b> nella barra indirizzi</li>
-                    <li>Oppure seleziona dai tre puntini <b>(...)</b> ➔ <b>App</b> ➔ <b>Installa</b></li>
-                    <li>Spunta <i>"Crea collegamento sul desktop"</i> e conferma!</li>
-                  </ol>
-                </div>
+                <ol className="list-decimal list-inside space-y-2 text-slate-600 pl-1 text-xs">
+                  <li>In <b>Microsoft Edge</b>, guarda all'estremità destra della barra degli indirizzi in alto.</li>
+                  <li>Clicca sull'icona <b>"App disponibile. Installa HydroPrint"</b> (icona a forma di monitor con freccia).</li>
+                  <li>In alternativa, clicca sui tre puntini <b>(...)</b> in alto a destra ➔ <b>App</b> ➔ <b>Installa questo sito come app</b>.</li>
+                  <li>Nella finestra di dialogo di Windows 11, spunta:
+                    <ul className="list-disc pl-6 pt-1 space-y-0.5 text-slate-700 font-medium">
+                      <li>☑ Crea collegamento sul desktop</li>
+                      <li>☑ Aggiungi alla barra delle applicazioni</li>
+                      <li>☑ Aggiungi a Start</li>
+                    </ul>
+                  </li>
+                  <li>L'app si aprirà in una finestra desktop dedicata senza barre o schede, pronta all'uso!</li>
+                </ol>
               </div>
             </div>
           )}
 
-          {/* TAB PRINTER */}
-          {activeTab === 'printer' && (
+          {/* TAB 3: STANDALONE OFFLINE (.BAT / POWERSHELL) */}
+          {activeTab === 'offline' && (
+            <div className="space-y-4 animate-in fade-in duration-100">
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-emerald-950 text-sm mb-1">
+                    Pacchetto Offline & Script per Windows 11
+                  </h4>
+                  <p className="text-emerald-900 text-xs leading-relaxed">
+                    Per postazioni in officina che devono funzionare al 100% offline o su server locale LAN. Richiede solo Node.js LTS installato sul computer.
+                  </p>
+                </div>
+              </div>
+
+              {/* Download Package */}
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="font-bold text-slate-900 block text-sm">
+                    Scarica Pacchetto Completo Windows 11 (.zip)
+                  </span>
+                  <span className="text-slate-500 text-[11px]">
+                    Include script AVVIA_APP.bat, script PowerShell, guide e documentazione anti-compressione.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDownloadZipPackage}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-colors shrink-0 cursor-pointer text-xs"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Scarica Archivio ZIP Windows 11</span>
+                </button>
+              </div>
+
+              {/* Single File Downloads */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-slate-800 block">AVVIA_APP.bat</span>
+                    <span className="text-slate-500 text-[11px]">Script Batch doppio-clic per Windows 11</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadTextFile(AVVIA_APP_BAT_CONTENT, 'AVVIA_APP.bat', 'application/x-bat')}
+                    className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 transition-colors"
+                    title="Scarica AVVIA_APP.bat"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-slate-800 block">Avvia-HydroPrint-Windows11.ps1</span>
+                    <span className="text-slate-500 text-[11px]">Script PowerShell con creazione Desktop .lnk</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadTextFile(AVVIA_POWERSHELL_PS1_CONTENT, 'Avvia-HydroPrint-Windows11.ps1', 'text/plain')}
+                    className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700 transition-colors"
+                    title="Scarica script PowerShell"
+                  >
+                    <Download className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Batch Preview */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700">Contenuto dello script AVVIA_APP.bat:</span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(AVVIA_APP_BAT_CONTENT, 'bat')}
+                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold"
+                  >
+                    {copiedCmd === 'bat' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedCmd === 'bat' ? 'Copiato!' : 'Copia codice'}</span>
+                  </button>
+                </div>
+                <pre className="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-[11px] overflow-x-auto max-h-40 leading-relaxed">
+                  {AVVIA_APP_BAT_CONTENT}
+                </pre>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: CONFIGURAZIONE INEO3320 */}
+          {activeTab === 'driver' && (
             <div className="space-y-4 animate-in fade-in duration-100">
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
                 <h4 className="font-bold text-amber-950 text-sm mb-1 flex items-center gap-1.5">
                   <Printer className="w-4 h-4 text-amber-700" />
-                  Impostazioni di Stampa per Develop INEO3320 (Windows & Linux CUPS)
+                  Parametri Driver Develop INEO3320 in Windows 11
                 </h4>
-                <p className="text-amber-800 leading-relaxed">
-                  Per far collimare al millimetro i testi con le righe del cartellino prestampato, imposta la finestra di stampa del browser (<code>Ctrl + P</code>) come indicato.
+                <p className="text-amber-800 text-xs leading-relaxed">
+                  Impostazioni consigliate per allineare millimetricamente le coordinate di stampa ai moduli cartacei prestampati Hydro-Mec nel cassetto Bypass.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-                  <span className="font-bold text-slate-800 block">Formato Carta:</span>
+                  <span className="font-bold text-slate-800 block">Formato Carta (Cartellino 220 mm):</span>
+                  <span className="text-blue-700 font-bold bg-blue-100 px-2 py-0.5 rounded text-[11px]">Modulo 220 × 87 mm</span>
+                  <p className="text-slate-500 text-[11px]">Creato in "Proprietà server di stampa" per evitare compressione</p>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                  <span className="font-bold text-slate-800 block">Formato Carta (Cartellino Blu):</span>
                   <span className="text-blue-700 font-bold bg-blue-100 px-2 py-0.5 rounded text-[11px]">A6 (105 × 148 mm)</span>
-                  <p className="text-slate-500 text-[11px]">Per cartellino Materiale da Controllare (147.5 × 104 mm)</p>
+                  <p className="text-slate-500 text-[11px]">Standard internazionale per materiale da controllare</p>
                 </div>
 
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
                   <span className="font-bold text-slate-800 block">Cassetto Carta / Sorgente:</span>
-                  <span className="text-blue-700 font-bold bg-blue-100 px-2 py-0.5 rounded text-[11px]">Bypass / Vassoio Manuale</span>
-                  <p className="text-slate-500 text-[11px]">Inserire i cartellini prestampati regolando le guide</p>
+                  <span className="text-blue-700 font-bold bg-blue-100 px-2 py-0.5 rounded text-[11px]">Vassoio Bypass (Manuale)</span>
+                  <p className="text-slate-500 text-[11px]">Inserire i cartellini regolando con cura le guide di plastica</p>
                 </div>
 
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-                  <span className="font-bold text-slate-800 block">Orientamento:</span>
-                  <span className="text-blue-700 font-bold bg-blue-100 px-2 py-0.5 rounded text-[11px]">Orizzontale (Landscape)</span>
-                  <p className="text-slate-500 text-[11px]">Allineato alla direzione di alimentazione del cartellino</p>
-                </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-                  <span className="font-bold text-slate-800 block">Scala / Adattamento:</span>
+                  <span className="font-bold text-slate-800 block">Scala di Stampa del Browser:</span>
                   <span className="text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded text-[11px]">100% (Effettiva)</span>
-                  <p className="text-slate-500 text-[11px]">NON selezionare "Adatta alla pagina" per mantenere i mm precisi</p>
+                  <p className="text-slate-500 text-[11px]">MAI "Adatta alla pagina" per mantenere le coordinate esatte</p>
                 </div>
 
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1 sm:col-span-2">
                   <span className="font-bold text-slate-800 block">Grafica di Sfondo:</span>
                   <p className="text-slate-600 text-[11px]">
-                    - <b>Cartellino Prestampato (Uso Standard)</b>: lascia <u>disattivata</u> la grafica di sfondo per stampare soltanto l'inchiostro dei dati sopra il cartellino prestampato.<br />
-                    - <b>Carta Bianca o Etichette</b>: attiva il flag <i>"Includi sfondo cartellino nella stampa"</i> per stampare anche la grafica blu/finito.
+                    - <b>Cartellino Prestampato (Uso Normale)</b>: lascia <u>disattivata</u> la grafica di sfondo per stampare soltanto l'inchiostro dei dati sopra il cartoncino.<br />
+                    - <b>Fogli Bianchi o Etichette di Prova</b>: attiva il flag <i>"Includi sfondo cartellino nella stampa"</i> per riprodurre a colori l'intero modulo.
                   </p>
                 </div>
               </div>
@@ -581,7 +555,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
           <span className="text-slate-500 text-[11px]">
-            Archivi generati direttamente in locale con Blob binario certificato al 100% integro.
+            Pacchetto e guide ottimizzati al 100% per Windows 11. Nessun componente Linux.
           </span>
           <button
             type="button"
