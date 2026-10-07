@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { missingRequired, refreshAutoDate, todayIso } from './lib/cartellino';
 import { formBarcodeWarnings } from './lib/barcode';
+import { shrinkImageFile } from './lib/image';
 import {
   CartellinoType,
   FieldCalibration,
@@ -196,6 +197,18 @@ export default function App() {
   // Stampa di prova: dati di esempio solo quando chiesti esplicitamente.
   const [testPrint, setTestPrint] = useState(false);
 
+  // Salvataggio nel browser fallito (spazio esaurito): va detto chiaramente, non solo in console.
+  const [saveError, setSaveError] = useState(false);
+  const persist = (keys: string[], value: unknown, what: string) => {
+    try {
+      const json = JSON.stringify(value);
+      keys.forEach((key) => localStorage.setItem(key, json));
+    } catch (e) {
+      console.error(`Failed to save ${what}`, e);
+      setSaveError(true);
+    }
+  };
+
   // Tab di navigazione
   const [activeTab, setActiveTab] = useState<'stampa' | 'calibrazione' | 'articoli' | 'lavoranti'>('stampa');
   const [selectedCalibFieldId, setSelectedCalibFieldId] = useState<string | null>(null);
@@ -219,38 +232,19 @@ export default function App() {
 
   // Sincronizzazione persistente LocalStorage
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.ARTICOLI, JSON.stringify(articoli));
-      localStorage.setItem(STORAGE_KEYS.LEGACY_ARTICOLI, JSON.stringify(articoli));
-    } catch (e) {
-      console.error('Failed to save articoli', e);
-    }
+    persist([STORAGE_KEYS.ARTICOLI, STORAGE_KEYS.LEGACY_ARTICOLI], articoli, 'articoli');
   }, [articoli]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.LAVORANTI, JSON.stringify(lavoranti));
-      localStorage.setItem(STORAGE_KEYS.LEGACY_LAVORANTI, JSON.stringify(lavoranti));
-    } catch (e) {
-      console.error('Failed to save lavoranti', e);
-    }
+    persist([STORAGE_KEYS.LAVORANTI, STORAGE_KEYS.LEGACY_LAVORANTI], lavoranti, 'lavoranti');
   }, [lavoranti]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.POSIZIONI, JSON.stringify(posizioni));
-      localStorage.setItem(STORAGE_KEYS.LEGACY_POSIZIONI, JSON.stringify(posizioni));
-    } catch (e) {
-      console.error('Failed to save posizioni', e);
-    }
+    persist([STORAGE_KEYS.POSIZIONI, STORAGE_KEYS.LEGACY_POSIZIONI], posizioni, 'posizioni');
   }, [posizioni]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-    } catch (e) {
-      console.error('Failed to save settings', e);
-    }
+    persist([STORAGE_KEYS.SETTINGS], settings, 'settings');
   }, [settings]);
 
   // Aggiornamento singolo parametro posizione di calibrazione (top, left, fontSize, heightMm, maxWidth)
@@ -310,11 +304,12 @@ export default function App() {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   };
 
-  // Caricamento scansione personalizzata da file
-  const handleCustomBgFile = (tipo: CartellinoType, file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
+  // Caricamento scansione personalizzata da file.
+  // La foto viene rimpicciolita: una scansione da qualche MB riempirebbe la memoria del browser (~5 MB)
+  // e da quel momento nessuna impostazione verrebbe più salvata.
+  const handleCustomBgFile = async (tipo: CartellinoType, file: File) => {
+    try {
+      const dataUrl = await shrinkImageFile(file);
       setSettings((prev) => ({
         ...prev,
         customBgImages: {
@@ -323,8 +318,10 @@ export default function App() {
         }
       }));
       showToast(`Immagine scansione caricata per ${tipo}!`);
-    };
-    reader.readAsDataURL(file);
+    } catch (e) {
+      console.error('Failed to load background image', e);
+      showToast('Immagine non leggibile: prova con un file JPG o PNG.', 'info');
+    }
   };
 
   // Import CSV Articoli
@@ -569,6 +566,17 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6">
+        {saveError && (
+          <div className="mb-4 flex items-start gap-3 p-4 bg-rose-50 border-2 border-rose-300 rounded-xl text-rose-900 text-sm">
+            <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <span>
+              <b>Attenzione: il browser non riesce più a salvare.</b> Le ultime modifiche (articoli, lavoranti,
+              posizioni o impostazioni) andranno perse alla chiusura. Fai subito un <b>Backup</b> dal pulsante in
+              alto e controlla di non aver caricato immagini di sfondo molto grandi.
+            </span>
+          </div>
+        )}
+
         {activeTab === 'stampa' && (
           <StampaTab
             formData={formData}
