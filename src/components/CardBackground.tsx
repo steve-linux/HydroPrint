@@ -108,13 +108,13 @@ export const CardBackground: React.FC<CardBackgroundProps> = ({
       ) : (
         // High fidelity inline SVG fallback for sfondo-finito
         <svg
-          viewBox="0 0 2200 870"
+          viewBox="0 0 2190 870"
           className="w-full h-full object-fill block"
           preserveAspectRatio="none"
         >
-          <rect width="2200" height="870" fill="#ffffff" />
-          <rect x="6" y="6" width="2188" height="858" fill="none" stroke="#111111" strokeWidth="6" />
-          <line x1="6" y1="230" x2="2194" y2="230" stroke="#111111" strokeWidth="6" />
+          <rect width="2190" height="870" fill="#ffffff" />
+          <rect x="6" y="6" width="2178" height="858" fill="none" stroke="#111111" strokeWidth="6" />
+          <line x1="6" y1="230" x2="2184" y2="230" stroke="#111111" strokeWidth="6" />
           <g>
             <text x="45" y="105" fontFamily="'Arial Black', sans-serif" fontWeight="900" fontSize="64" fill="#000000">
               HYDRO•MEC
@@ -123,9 +123,9 @@ export const CardBackground: React.FC<CardBackgroundProps> = ({
               COD. LANCIO
             </text>
           </g>
-          <rect x="546" y="6" width="1648" height="224" fill="#2b5faa" />
+          <rect x="546" y="6" width="1638" height="224" fill="#2b5faa" />
           <text
-            x="1370"
+            x="1365"
             y="108"
             textAnchor="middle"
             fontFamily="'Arial Black', sans-serif"
@@ -136,7 +136,7 @@ export const CardBackground: React.FC<CardBackgroundProps> = ({
             MATERIALE FINITO
           </text>
           <text
-            x="1370"
+            x="1365"
             y="196"
             textAnchor="middle"
             fontFamily="'Arial Black', sans-serif"

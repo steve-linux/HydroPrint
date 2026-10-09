@@ -1,6 +1,6 @@
 {
   "name": "HydroPrint - Stampa Cartellini Hydro-Mec (Windows 11)",
-  "description": "Applicazione specializzata per la compilazione, calibrazione millimetrica e stampa cartellini officina Hydro-Mec per Windows 11 con supporto formato 220x87mm e 147.5x104mm.",
+  "description": "Applicazione specializzata per la compilazione, calibrazione millimetrica e stampa cartellini officina Hydro-Mec per Windows 11 con supporto formato 219x87mm e 147.5x104mm.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,0 +1,26 @@
+# Controlli automatici: a ogni Pull Request e a ogni modifica su main GitHub
+# installa l'app su un computer pulito, controlla i tipi, esegue i test e prova a compilarla.
+# Il risultato compare nella Pull Request (spunta verde o croce rossa).
+name: Controlli
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  controlli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Installa le librerie
+        run: npm install --no-audit --no-fund
+      - name: Controllo dei tipi (TypeScript)
+        run: npm run lint
+      - name: Test automatici
+        run: npm test
+      - name: Compilazione
+        run: npm run build

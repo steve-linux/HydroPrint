@@ -42,8 +42,8 @@ Guida all'installazione, esecuzione e configurazione dell'applicazione **HydroPr
 
 ---
 
-## 🖨️ Calibrazione Stampante & Risoluzione Compressione 220 mm
-Consultare il documento specifico **`RISOLUZIONE_COMPRESSIONE_220MM.md`** (accessibile anche dal pulsante "Diagnosi Compressione 220mm" nell'applicazione) per le istruzioni dettagliate sulla creazione del modulo carta personalizzato in Windows 11 e la configurazione del vassoio Bypass.
+## 🖨️ Calibrazione Stampante & Risoluzione Compressione 219 mm
+Consultare il documento specifico **`RISOLUZIONE_COMPRESSIONE_220MM.md`** (accessibile anche dal pulsante "Diagnosi Compressione 219mm" nell'applicazione) per le istruzioni dettagliate sulla creazione del modulo carta personalizzato in Windows 11 e la configurazione del vassoio Bypass.
 
 ---
 

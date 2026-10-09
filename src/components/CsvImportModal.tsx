@@ -155,6 +155,16 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({
       return;
     }
 
+    if (
+      importMode === 'replace' &&
+      !confirm(
+        `Sostituire l'intero elenco con i ${previewData.length} ${type === 'articoli' ? 'articoli' : 'lavoranti'} del file?\n\n` +
+          'Quelli che ci sono adesso verranno cancellati. Se non sei sicuro, annulla e fai prima un Backup.'
+      )
+    ) {
+      return;
+    }
+
     if (type === 'articoli') {
       onImportArticoli(previewData as Articolo[], importMode);
     } else {

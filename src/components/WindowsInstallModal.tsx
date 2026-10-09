@@ -113,7 +113,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
       // Informazioni di versione
       zip.file(
         'VERSIONE_WINDOWS_11.txt',
-        `HydroPrint per Windows 11\nVersione: 4.1.0 (Windows 11 Edition)\nData rilascio: ${new Date().toLocaleDateString('it-IT')}\nSupporto formati: 220x87mm (Bypass) e 147.5x104mm (A6 Bypass)\nStampante target: Develop INEO3320 / Konica Minolta`
+        `HydroPrint per Windows 11\nVersione: 4.1.0 (Windows 11 Edition)\nData rilascio: ${new Date().toLocaleDateString('it-IT')}\nSupporto formati: 219x87mm (Bypass) e 147.5x104mm (A6 Bypass)\nStampante target: Develop INEO3320 / Konica Minolta`
       );
 
       const content = await zip.generateAsync({ type: 'blob' });
@@ -155,7 +155,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Risoluzione compressione cartellino 220mm, configurazione driver INEO3320 e avvio standalone
+                Risoluzione compressione cartellino 219mm, configurazione driver INEO3320 e avvio standalone
               </p>
             </div>
           </div>
@@ -180,7 +180,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
             }`}
           >
             <AlertTriangle className="w-4 h-4 text-rose-600" />
-            <span>🔍 Problema Compressione 220 mm</span>
+            <span>🔍 Problema Compressione 219 mm</span>
           </button>
 
           <button
@@ -232,7 +232,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
             </div>
           )}
 
-          {/* TAB 1: RISOLUZIONE COMPRESSIONE 220 MM */}
+          {/* TAB 1: RISOLUZIONE COMPRESSIONE 219 MM */}
           {activeTab === 'compression' && (
             <div className="space-y-5 animate-in fade-in duration-100">
               {/* Highlight Box */}
@@ -243,10 +243,10 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
                   </div>
                   <div>
                     <h4 className="font-bold text-rose-950 text-sm mb-1">
-                      Perché la Stampa da 220 mm Risulta Compressa a ~150 mm?
+                      Perché la Stampa da 219 mm Risulta Compressa a ~150 mm?
                     </h4>
                     <p className="text-rose-900 text-xs leading-relaxed">
-                      La causa è la discordanza tra il formato <b>A6 (148 × 105 mm)</b> utilizzato per il cartellino blu e il formato <b>220 × 87 mm</b> del materiale in lavorazione. Quando Edge o Windows 11 mantengono l'impostazione "Adatta alla pagina" o il formato A6 memorizzato, il browser calcola il rapporto <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-rose-300">148 mm / 220 mm ≈ 67%</span> e schiaccia l'intera stampa nella larghezza di 150 mm!
+                      La causa è la discordanza tra il formato <b>A6 (148 × 105 mm)</b> utilizzato per il cartellino blu e il formato <b>219 × 87 mm</b> del materiale in lavorazione. Quando Edge o Windows 11 mantengono l'impostazione "Adatta alla pagina" o il formato A6 memorizzato, il browser calcola il rapporto <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-rose-300">148 mm / 219 mm ≈ 67%</span> e schiaccia l'intera stampa nella larghezza di 150 mm!
                     </p>
                   </div>
                 </div>
@@ -271,10 +271,10 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
                   <div className="p-3 bg-white rounded-lg border border-amber-200 space-y-1">
                     <span className="font-bold text-amber-900 flex items-center justify-between">
                       <span>2. Cartellino Finito (Lavorazione)</span>
-                      <span className="font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[11px]">220 × 87 mm</span>
+                      <span className="font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded text-[11px]">219 × 87 mm</span>
                     </span>
                     <p className="text-slate-600 text-[11px]">
-                      È <b>72 mm più largo dell'A6</b>. Se stampato con impostazione A6, il driver o il browser riduce la larghezza da 220 a 148 mm, lasciando vuota la parte destra del foglio!
+                      È <b>71 mm più largo dell'A6</b>. Se stampato con impostazione A6, il driver o il browser riduce la larghezza da 219 a 148 mm, lasciando vuota la parte destra del foglio!
                     </p>
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
                       <span>Correzione Software Applicata nel Codice (Già Attiva)</span>
                     </div>
                     <p className="text-slate-600 text-xs pl-7">
-                      Abbiamo integrato in questa versione l'iniezione dinamica della regola CSS <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono">@page &#123; size: 220mm 87mm; margin: 0; &#125;</code>. Quando premi Stampa, Edge richiede esplicitamente a Windows 11 un foglio largo 220 mm invece di ereditare il vecchio formato A6.
+                      Abbiamo integrato in questa versione l'iniezione dinamica della regola CSS <code className="bg-slate-100 text-slate-800 px-1 py-0.5 rounded font-mono">@page &#123; size: 219mm 87mm; margin: 0; &#125;</code>. Quando premi Stampa, Edge richiede esplicitamente a Windows 11 un foglio largo 219 mm invece di ereditare il vecchio formato A6.
                     </p>
                   </div>
 
@@ -313,7 +313,7 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
                   <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-1">
                     <div className="font-bold text-slate-900 flex items-center gap-2 text-xs">
                       <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">3</span>
-                      <span>Creazione Modulo Utente Personalizzato 220×87 mm in Windows 11</span>
+                      <span>Creazione Modulo Utente Personalizzato 219×87 mm in Windows 11</span>
                     </div>
                     <div className="text-slate-600 text-xs pl-7 space-y-1">
                       <p>
@@ -322,8 +322,8 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
                       <ol className="list-decimal list-inside space-y-0.5 text-slate-700">
                         <li>Premi <code className="bg-slate-100 px-1 font-bold">Win + R</code>, scrivi <code className="bg-slate-100 px-1 font-bold">control printers</code> e premi Invio.</li>
                         <li>Clicca in alto su <b>Proprietà server di stampa</b>.</li>
-                        <li>Scheda <b>Moduli</b> ➔ Spunta <b>Crea un nuovo modulo</b> ➔ Nome: <code className="bg-slate-100 px-1 font-bold">Hydro-Mec 220x87</code>.</li>
-                        <li>Imposta: Larghezza <b>22,00 cm</b>, Altezza <b>8,70 cm</b>, Margini <b>0,00 cm</b> ➔ Clicca <b>Salva modulo</b>.</li>
+                        <li>Scheda <b>Moduli</b> ➔ Spunta <b>Crea un nuovo modulo</b> ➔ Nome: <code className="bg-slate-100 px-1 font-bold">Hydro-Mec 219x87</code>.</li>
+                        <li>Imposta: Larghezza <b>21,90 cm</b>, Altezza <b>8,70 cm</b>, Margini <b>0,00 cm</b> ➔ Clicca <b>Salva modulo</b>.</li>
                         <li>Nelle Proprietà di stampa di INEO3320, seleziona questo formato per il <b>Cassetto Bypass</b>.</li>
                       </ol>
                     </div>
@@ -517,8 +517,8 @@ export const WindowsInstallModal: React.FC<WindowsInstallModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-                  <span className="font-bold text-slate-800 block">Formato Carta (Cartellino 220 mm):</span>
-                  <span className="text-blue-700 font-bold bg-blue-100 px-2 py-0.5 rounded text-[11px]">Modulo 220 × 87 mm</span>
+                  <span className="font-bold text-slate-800 block">Formato Carta (Cartellino 219 mm):</span>
+                  <span className="text-blue-700 font-bold bg-blue-100 px-2 py-0.5 rounded text-[11px]">Modulo 219 × 87 mm</span>
                   <p className="text-slate-500 text-[11px]">Creato in "Proprietà server di stampa" per evitare compressione</p>
                 </div>
 

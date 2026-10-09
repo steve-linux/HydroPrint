@@ -2,12 +2,12 @@ import { CartelliniPositions, TagDimensions, CartellinoType } from '../types';
 
 export const TAG_DIMENSIONS: Record<CartellinoType, TagDimensions> = {
   versare: {
-    widthMm: 220,
+    widthMm: 219,
     heightMm: 87,
-    name: 'Materiale in Lavorazione (220 x 87 mm)',
+    name: 'Materiale in Lavorazione (219 x 87 mm)',
     bgImage: '/sfondo-finito.jpg',
     bgSvg: '/sfondo-finito.svg',
-    description: 'Cartellino per materiale in lavorazione / da versare (220 x 87 mm)'
+    description: 'Cartellino per materiale in lavorazione / da versare (219 x 87 mm)'
   },
   controllare: {
     widthMm: 147.5,
@@ -44,6 +44,7 @@ export const DEFAULT_POSIZIONI: CartelliniPositions = {
       left: 105,
       fontSize: 8,
       heightMm: 11,
+      maxWidth: 39, // fino a 144 mm: resta dentro il cartellino (147,5 mm)
       isBarcode: true
     },
     lancio: {
@@ -61,6 +62,7 @@ export const DEFAULT_POSIZIONI: CartelliniPositions = {
       left: 96,
       fontSize: 8,
       heightMm: 11,
+      maxWidth: 48, // fino a 144 mm: resta dentro il cartellino (147,5 mm)
       isBarcode: true
     },
     qta: {
@@ -120,6 +122,7 @@ export const DEFAULT_POSIZIONI: CartelliniPositions = {
       left: 8,
       fontSize: 8,
       heightMm: 12,
+      maxWidth: 45, // fino a 53 mm: resta nella casella COD. LANCIO, lontano dal barcode articolo
       isBarcode: true
     },
     codice: {
@@ -145,6 +148,7 @@ export const DEFAULT_POSIZIONI: CartelliniPositions = {
       left: 68,
       fontSize: 8,
       heightMm: 12,
+      maxWidth: 92, // fino a 160 mm: si ferma prima della colonna Q.tà
       isBarcode: true
     },
     qta: {

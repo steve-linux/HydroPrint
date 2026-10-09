@@ -3,114 +3,42 @@ import { CartellinoType, FieldCalibration, CartellinoFormData, AppSettings } fro
 import { TAG_DIMENSIONS } from '../constants/defaultPositions';
 import { CardBackground } from './CardBackground';
 import { BarcodeRenderer } from './BarcodeRenderer';
+import { SAMPLE_FORM, fieldText } from '../lib/cartellino';
+import { barcodeMaxWidthMm } from '../lib/barcode';
 
 interface PrintDocumentProps {
   tipo: CartellinoType;
   positions: Record<string, FieldCalibration>;
   formData: CartellinoFormData;
   settings: AppSettings;
+  // true solo per il pulsante "Stampa di prova": stampa dati di esempio per controllare l'allineamento
+  testPrint?: boolean;
 }
 
 export const PrintDocument: React.FC<PrintDocumentProps> = ({
   tipo,
   positions,
   formData,
-  settings
+  settings,
+  testPrint = false
 }) => {
   const dim = TAG_DIMENSIONS[tipo];
   const isA4Mode = settings.printMode === 'a4_bypass';
 
-  // Se l'utente ha compilato almeno un campo, stampa i dati reali.
-  // Se tutti i campi sono vuoti, stampa dati di prova di default così l'anteprima del driver non è mai bianca!
-  const hasAnyData = Boolean(
-    formData.codiceArticolo ||
-    formData.revisione ||
-    formData.numeroLancio ||
-    formData.numeroPezzi ||
-    formData.lavorante
-  );
-
-  const getFieldText = (fieldKey: string): string => {
-    if (hasAnyData) {
-      const formattedDate = formData.data
-        ? new Date(formData.data).toLocaleDateString('it-IT')
-        : new Date().toLocaleDateString('it-IT');
-
-      const formattedCollo = (() => {
-        if (formData.colloNumero !== undefined && formData.colloTotale !== undefined) {
-          const num = formData.colloNumero || '1';
-          const tot = formData.colloTotale || '1';
-          return `Collo: ${num}/${tot}`;
-        }
-        if (formData.collo) {
-          return formData.collo.toLowerCase().includes('collo')
-            ? formData.collo
-            : `Collo: ${formData.collo}`;
-        }
-        return 'Collo: 1/1';
-      })();
-
-      switch (fieldKey) {
-        case 'codice':
-          return formData.codiceArticolo || '';
-        case 'revisione':
-          return formData.revisione || '';
-        case 'lancio':
-          return formData.numeroLancio || '';
-        case 'qta':
-          return formData.numeroPezzi ? `${formData.numeroPezzi} PZ` : '';
-        case 'lavorante':
-          return formData.lavorante || '';
-        case 'data':
-          return formattedDate;
-        case 'collo':
-          return formattedCollo;
-        case 'note':
-          return formData.noteLibere || '';
-        default:
-          return '';
-      }
-    } else {
-      // Dati di prova per test stampa e allineamento cartellino vuoto
-      const formattedDate = new Date().toLocaleDateString('it-IT');
-      switch (fieldKey) {
-        case 'codice':
-          return '01.002.00';
-        case 'revisione':
-          return 'Rev. 01';
-        case 'lancio':
-          return 'L-2026-088';
-        case 'qta':
-          return '150 PZ';
-        case 'lavorante':
-          return 'TORNERIA MECCANICA';
-        case 'data':
-          return formattedDate;
-        case 'collo':
-          return 'Collo: 1/1';
-        case 'note':
-          return 'TEST ALLINEAMENTO';
-        default:
-          return '';
-      }
-    }
-  };
-
-  const barcodeArticoloVal = hasAnyData
-    ? formData.codiceArticolo
-    : '01.002.00';
-
-  const barcodeLancioVal = hasAnyData
-    ? formData.numeroLancio
-    : 'L-2026-088';
+  // Sempre e solo i dati inseriti: un campo vuoto resta vuoto sul cartellino.
+  // I dati di esempio escono soltanto con la stampa di prova, chiesta apposta.
+  const data: CartellinoFormData = testPrint ? { ...formData, ...SAMPLE_FORM } : formData;
+  const getFieldText = (fieldKey: string): string => fieldText(fieldKey, data);
+  const barcodeArticoloVal = data.codiceArticolo;
+  const barcodeLancioVal = data.numeroLancio;
 
   return (
     <>
       {/* 
-        DIRETTIVA CRITICA DI RISOLUZIONE COMPRESSIONE 220mm:
+        DIRETTIVA CRITICA DI RISOLUZIONE COMPRESSIONE 219mm:
         Iniezione esplicita di @page con la larghezza e altezza esatta del cartellino.
         Questo impedisce al motore di stampa di Windows 11 / Edge di ereditare
-        il formato A6 (148 mm) del cartellino precedente o di comprimere 220mm su 150mm.
+        il formato A6 (148 mm) del cartellino precedente o di comprimere 219mm su 150mm.
       */}
       <style>
         {isA4Mode
@@ -241,13 +169,15 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
                   <BarcodeRenderer
                     value={barcodeArticoloVal}
                     heightMm={field.heightMm || 12}
-                    displayValue={false}
+                    maxWidthMm={barcodeMaxWidthMm(tipo, fieldKey, field)}
+                    isPrint
                   />
                 ) : isBarcodeLancio ? (
                   <BarcodeRenderer
                     value={barcodeLancioVal}
                     heightMm={field.heightMm || 12}
-                    displayValue={false}
+                    maxWidthMm={barcodeMaxWidthMm(tipo, fieldKey, field)}
+                    isPrint
                   />
                 ) : isCollo ? (
                   <span
