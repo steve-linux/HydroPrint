@@ -118,7 +118,7 @@ export const CalibrationTab: React.FC<CalibrationTabProps> = ({
               onChange={(e) => onChangeTipo(e.target.value as CartellinoType)}
               className="w-full bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg p-2.5 font-bold focus:ring-2 focus:ring-blue-500"
             >
-              <option value="versare">Materiale in lavorazione (220 × 87 mm)</option>
+              <option value="versare">Materiale in lavorazione (219 × 87 mm)</option>
               <option value="controllare">Materiale da controllare (147.5 × 104 mm - Blu)</option>
             </select>
           </div>

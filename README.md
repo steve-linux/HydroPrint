@@ -2,7 +2,7 @@
 
 Compilazione e stampa dei cartellini prestampati Hydro-Mec sulla Develop ineo 3320 (vassoio bypass):
 
-- **Materiale in lavorazione / da versare**: 220 × 87 mm
+- **Materiale in lavorazione / da versare**: 219 × 87 mm
 - **Materiale da controllare** (blu): 147,5 × 104 mm
 
 È una pagina web (React + Vite) che gira nel browser. Articoli, lavoranti, posizioni di calibrazione

@@ -35,10 +35,10 @@ export const PrintDocument: React.FC<PrintDocumentProps> = ({
   return (
     <>
       {/* 
-        DIRETTIVA CRITICA DI RISOLUZIONE COMPRESSIONE 220mm:
+        DIRETTIVA CRITICA DI RISOLUZIONE COMPRESSIONE 219mm:
         Iniezione esplicita di @page con la larghezza e altezza esatta del cartellino.
         Questo impedisce al motore di stampa di Windows 11 / Edge di ereditare
-        il formato A6 (148 mm) del cartellino precedente o di comprimere 220mm su 150mm.
+        il formato A6 (148 mm) del cartellino precedente o di comprimere 219mm su 150mm.
       */}
       <style>
         {isA4Mode

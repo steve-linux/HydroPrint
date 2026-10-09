@@ -2,12 +2,12 @@ import { CartelliniPositions, TagDimensions, CartellinoType } from '../types';
 
 export const TAG_DIMENSIONS: Record<CartellinoType, TagDimensions> = {
   versare: {
-    widthMm: 220,
+    widthMm: 219,
     heightMm: 87,
-    name: 'Materiale in Lavorazione (220 x 87 mm)',
+    name: 'Materiale in Lavorazione (219 x 87 mm)',
     bgImage: '/sfondo-finito.jpg',
     bgSvg: '/sfondo-finito.svg',
-    description: 'Cartellino per materiale in lavorazione / da versare (220 x 87 mm)'
+    description: 'Cartellino per materiale in lavorazione / da versare (219 x 87 mm)'
   },
   controllare: {
     widthMm: 147.5,

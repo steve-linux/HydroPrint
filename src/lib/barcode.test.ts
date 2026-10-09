@@ -75,7 +75,7 @@ describe('i barcode non escono dal cartellino', () => {
 
   it('se il barcode viene trascinato verso destra lo spazio si riduce di conseguenza', () => {
     const field = { ...DEFAULT_POSIZIONI.versare.barcodeArticolo, left: 200 };
-    expect(barcodeMaxWidthMm('versare', 'barcodeArticolo', field)).toBe(220 - 200 - EDGE_MM);
+    expect(barcodeMaxWidthMm('versare', 'barcodeArticolo', field)).toBe(219 - 200 - EDGE_MM);
   });
 });
 
@@ -84,7 +84,7 @@ describe('casi visti nella revisione', () => {
     expect(formBarcodeWarnings(form('controllare', '01.002.00', 'L-2026-088'), DEFAULT_POSIZIONI.controllare)).toEqual([]);
   });
 
-  it('cartellino 220 mm con codici realistici: i due barcode non si toccano più', () => {
+  it('cartellino 219 mm con codici realistici: i due barcode non si toccano più', () => {
     const warnings = formBarcodeWarnings(form('versare', 'CORPO-MEC-12', 'L-2026-01234'), savedBeforeFix('versare'));
     expect(warnings).toEqual([]);
   });

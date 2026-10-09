@@ -1,5 +1,5 @@
 // Dimensione massima del lato lungo della scansione salvata come sfondo.
-// 1600 px su 220 mm sono ~185 dpi: più che sufficienti per allineare a video.
+// 1600 px su 219 mm sono ~185 dpi: più che sufficienti per allineare a video.
 export const MAX_BG_SIDE_PX = 1600;
 
 export const scaledSize = (width: number, height: number, maxSide = MAX_BG_SIDE_PX) => {

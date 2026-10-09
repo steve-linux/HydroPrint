@@ -298,7 +298,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
               onChange={(e) => onChangeFormData({ tipo: e.target.value as CartellinoType })}
               className="w-full text-sm font-semibold p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-900"
             >
-              <option value="versare">Materiale in lavorazione (220 × 87 mm)</option>
+              <option value="versare">Materiale in lavorazione (219 × 87 mm)</option>
               <option value="controllare">Materiale da controllare (147.5 × 104 mm - Blu)</option>
             </select>
           </div>
@@ -724,7 +724,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
             </div>
           </div>
 
-          {/* BANNER DI PREVENZIONE COMPRESSIONE 220 mm */}
+          {/* BANNER DI PREVENZIONE COMPRESSIONE 219 mm */}
           {formData.tipo === 'versare' && (
             <div className="lg:col-span-4 bg-amber-50 border-2 border-amber-300 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
               <div className="flex items-start gap-3">
@@ -733,11 +733,11 @@ export const StampaTab: React.FC<StampaTabProps> = ({
                 </div>
                 <div>
                   <span className="font-black text-amber-950 text-xs sm:text-sm block">
-                    ⚠️ Controllo Formato 220 mm (Anti-Compressione Windows 11)
+                    ⚠️ Controllo Formato 219 mm (Anti-Compressione Windows 11)
                   </span>
                   <p className="text-amber-900 text-xs mt-0.5 leading-relaxed">
                     Se la stampa risultava compressa a ~150 mm, il driver o Edge stavano riutilizzando il formato A6 (148 mm) del cartellino blu.
-                    Questo software ora inietta la direttiva <code className="bg-white/80 px-1 py-0.5 rounded font-mono font-bold text-amber-950">@page 220×87 mm</code>.
+                    Questo software ora inietta la direttiva <code className="bg-white/80 px-1 py-0.5 rounded font-mono font-bold text-amber-950">@page 219×87 mm</code>.
                     Assicurati che nel prompt di stampa di Windows la <b>Scala sia al 100% (NON "Adatta alla pagina")</b>.
                   </p>
                 </div>
@@ -747,7 +747,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
                 onClick={() => onOpenWindowsGuide && onOpenWindowsGuide('compression')}
                 className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white rounded-xl text-xs font-bold shadow-md shrink-0 transition-all cursor-pointer"
               >
-                <span>Guida Risoluzione 220 mm</span>
+                <span>Guida Risoluzione 219 mm</span>
               </button>
             </div>
           )}
@@ -776,7 +776,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
               <Printer className="w-5 h-5" />
               <span>
                 {formData.tipo === 'versare'
-                  ? 'Stampa Cartellino 220 × 87 mm (Bypass)'
+                  ? 'Stampa Cartellino 219 × 87 mm (Bypass)'
                   : 'Stampa Cartellino 147.5 × 104 mm (A6 Bypass)'}
               </span>
             </button>
@@ -842,7 +842,7 @@ export const StampaTab: React.FC<StampaTabProps> = ({
             <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
             <span>
               {formData.tipo === 'versare' ? (
-                <><b>Cartellino 220 mm:</b> Vassoio Bypass. Nel driver assicurati: <b>Scala 100%</b> e formato non forzato ad A6.</>
+                <><b>Cartellino 219 mm:</b> Vassoio Bypass. Nel driver assicurati: <b>Scala 100%</b> e formato non forzato ad A6.</>
               ) : (
                 <><b>Cartellino Blu:</b> Vassoio Bypass A6 (105 × 148 mm). Scala: 100%.</>
               )}

@@ -430,7 +430,7 @@ export default function App() {
                 </span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Stampa per Windows 11 • INEO3320 (Bypass 220×87 e 147.5×104 mm)
+                Stampa per Windows 11 • INEO3320 (Bypass 219×87 e 147.5×104 mm)
               </p>
             </div>
           </div>
@@ -461,7 +461,7 @@ export default function App() {
               )}
             </button>
 
-            {/* Quick Fix Button for 220mm format */}
+            {/* Quick Fix Button for 219mm format */}
             <button
               type="button"
               onClick={() => {
@@ -469,11 +469,11 @@ export default function App() {
                 setWindowsInstallModalOpen(true);
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold shadow-xs transition-colors cursor-pointer"
-              title="Diagnostica e risoluzione per cartellino 220 mm compresso su 150 mm"
+              title="Diagnostica e risoluzione per cartellino 219 mm compresso su 150 mm"
             >
               <AlertTriangle className="w-3.5 h-3.5 text-white animate-pulse" />
-              <span className="hidden sm:inline">Risolvi 220 mm</span>
-              <span className="sm:hidden">220 mm</span>
+              <span className="hidden sm:inline">Risolvi 219 mm</span>
+              <span className="sm:hidden">219 mm</span>
             </button>
 
             {/* Windows 11 Desktop / Download Code Button */}
@@ -684,7 +684,7 @@ export default function App() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500 no-print">
-        HydroPrint • Ottimizzato per Windows 11 & stampante Develop INEO3320 (Bypass: 220×87 mm e 147.5×104 mm) • Dati salvati localmente nel browser.
+        HydroPrint • Ottimizzato per Windows 11 & stampante Develop INEO3320 (Bypass: 219×87 mm e 147.5×104 mm) • Dati salvati localmente nel browser.
       </footer>
     </div>
 
